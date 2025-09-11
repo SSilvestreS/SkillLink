@@ -12,6 +12,7 @@ import { ContractsModule } from './contracts/contracts.module';
 import { MessagesModule } from './messages/messages.module';
 import { FilesModule } from './files/files.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 import { User } from './users/entities/user.entity';
 import { Profile } from './users/entities/profile.entity';
@@ -20,6 +21,7 @@ import { Contract } from './contracts/entities/contract.entity';
 import { Message } from './messages/entities/message.entity';
 import { Review } from './reviews/entities/review.entity';
 import { File } from './files/entities/file.entity';
+import { Notification } from './notifications/entities/notification.entity';
 
 @Module({
   imports: [
@@ -33,7 +35,7 @@ import { File } from './files/entities/file.entity';
       username: process.env.DB_USERNAME || 'postgres',
       password: process.env.DB_PASSWORD || 'postgres',
       database: process.env.DB_DATABASE || 'skilllink',
-      entities: [User, Profile, Service, Contract, Message, Review, File],
+      entities: [User, Profile, Service, Contract, Message, Review, File, Notification],
       synchronize: process.env.NODE_ENV === 'development',
       logging: process.env.NODE_ENV === 'development',
     }),
@@ -51,6 +53,7 @@ import { File } from './files/entities/file.entity';
     MessagesModule,
     FilesModule,
     ReviewsModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}

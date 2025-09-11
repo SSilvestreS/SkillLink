@@ -13,6 +13,7 @@ import '../../features/contracts/presentation/pages/contracts_page.dart';
 import '../../features/contracts/presentation/pages/contract_detail_page.dart';
 import '../../features/messages/presentation/pages/messages_page.dart';
 import '../../features/messages/presentation/pages/chat_page.dart';
+import '../../features/notifications/presentation/pages/notifications_page.dart';
 import '../providers/auth_provider.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -102,6 +103,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           final contractId = state.pathParameters['contractId']!;
           return ChatPage(contractId: contractId);
         },
+      ),
+      
+      // Notifications Routes
+      GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationsPage(),
       ),
     ],
   );

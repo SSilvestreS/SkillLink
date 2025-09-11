@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/providers/auth_provider.dart';
+import '../../../../core/providers/notification_provider.dart';
 import '../../../../core/models/user.dart';
 import '../../../../core/theme/app_theme.dart';
 
@@ -17,10 +18,47 @@ class HomePage extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('SkillLink'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              // TODO: Implement notifications
+          Consumer(
+            builder: (context, ref, child) {
+              final unreadCountState = ref.watch(unreadCountProvider);
+              return Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications_outlined),
+                    onPressed: () => context.go('/notifications'),
+                  ),
+                  unreadCountState.when(
+                    data: (count) => count > 0
+                        ? Positioned(
+                            right: 8,
+                            top: 8,
+                            child: Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: AppTheme.errorColor,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              constraints: const BoxConstraints(
+                                minWidth: 16,
+                                minHeight: 16,
+                              ),
+                              child: Text(
+                                count > 99 ? '99+' : count.toString(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          )
+                        : const SizedBox.shrink(),
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, __) => const SizedBox.shrink(),
+                  ),
+                ],
+              );
             },
           ),
           PopupMenuButton<String>(
