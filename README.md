@@ -1,6 +1,6 @@
 #  SkillLink - Plataforma de Gestão de Freelancers e Contratos
 
-Uma plataforma full stack completa para conectar empresas e freelancers, facilitando a gestão de contratos, negociações e entregas.
+Uma plataforma full stack completa para conectar empresas e freelancers, facilitando a gestão de contratos, negociações, entregas e pagamentos. Sistema profissional com notificações em tempo real e múltiplos métodos de pagamento.
 
 ##  Tecnologias Utilizadas
 
@@ -11,17 +11,24 @@ Uma plataforma full stack completa para conectar empresas e freelancers, facilit
 - **JWT** - Autenticação e autorização
 - **Multer** - Upload de arquivos
 - **Class-validator** - Validação de DTOs
+- **Stripe** - Sistema de pagamentos
+- **Socket.io** - Notificações em tempo real
+- **Swagger** - Documentação da API
 
 ### Frontend
 - **Flutter** - Framework mobile-first
 - **Riverpod** - Gerenciamento de estado
 - **HTTP** - Comunicação com API
 - **Shared Preferences** - Armazenamento local
+- **GoRouter** - Navegação avançada
+- **Socket.io Client** - Notificações em tempo real
+- **PWA** - Progressive Web App
 
 ### DevOps
 - **Docker** - Containerização
 - **Docker Compose** - Orquestração de serviços
 - **PostgreSQL** - Banco de dados containerizado
+- **Nginx** - Servidor web para Flutter
 
 ##  Arquitetura do Sistema
 
@@ -29,6 +36,7 @@ Uma plataforma full stack completa para conectar empresas e freelancers, facilit
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Flutter App   │    │   NestJS API    │    │   PostgreSQL    │
 │   (Frontend)    │◄──►│   (Backend)     │◄──►│   (Database)    │
+│   PWA + Mobile  │    │   + Stripe      │    │   + Notifications│
 └─────────────────┘    └─────────────────┘    └─────────────────┘
          │                       │                       │
          │                       │                       │
@@ -36,6 +44,13 @@ Uma plataforma full stack completa para conectar empresas e freelancers, facilit
     │  Files  │            │  Files  │            │  Data   │
     │ Storage │            │ Upload  │            │ Volume  │
     └─────────┘            └─────────┘            └─────────┘
+         │                       │
+         │                       │
+    ┌─────────┐            ┌─────────┐
+    │ Socket  │            │ Stripe  │
+    │  Real-  │            │Payment  │
+    │  time   │            │ Gateway │
+    └─────────┘            └─────────┘
 ```
 
 ##  Como Executar
@@ -46,17 +61,41 @@ Uma plataforma full stack completa para conectar empresas e freelancers, facilit
 
 ### 1. Clone o repositório
 ```bash
-git clone <seu-repositorio>
-cd projeto
+git clone https://github.com/SSilvestreS/SkillLink.git
+cd SkillLink
 ```
 
-### 2. Execute com Docker Compose
+### 2. Configure as variáveis de ambiente
+```bash
+cp .env.example .env
+```
+
+Edite o arquivo `.env` com suas configurações:
+```env
+# Database
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+DB_DATABASE=skilllink
+
+# JWT
+JWT_SECRET=sua_chave_secreta_aqui
+JWT_EXPIRES_IN=7d
+
+# Stripe (opcional)
+STRIPE_SECRET_KEY=sk_test_sua_chave_stripe
+STRIPE_PUBLISHABLE_KEY=pk_test_sua_chave_publica
+```
+
+### 3. Execute com Docker Compose
 ```bash
 docker-compose up --build
 ```
 
-### 3. Acesse a aplicação
+### 4. Acesse a aplicação
 - **API**: http://localhost:3000
+- **API Docs (Swagger)**: http://localhost:3000/api
 - **Flutter Web**: http://localhost:8080 (após build)
 - **PostgreSQL**: localhost:5432
 
@@ -70,6 +109,9 @@ docker-compose up --build
 - ✅ Negociação de contratos
 - ✅ Upload de entregas
 - ✅ Avaliação de empresas
+- ✅ Recebimento de pagamentos
+- ✅ Notificações em tempo real
+- ✅ Estatísticas financeiras
 
 ### Para Empresas
 - ✅ Cadastro e login
@@ -78,12 +120,20 @@ docker-compose up --build
 - ✅ Criação de contratos
 - ✅ Acompanhamento de entregas
 - ✅ Avaliação de freelancers
+- ✅ Pagamento de contratos
+- ✅ Notificações em tempo real
+- ✅ Controle financeiro
 
 ### Funcionalidades Gerais
 - ✅ Sistema de mensagens
 - ✅ Histórico de contratos
 - ✅ Upload de arquivos
 - ✅ Controle de acesso por roles
+- ✅ Notificações em tempo real (WebSocket)
+- ✅ Sistema de pagamentos completo
+- ✅ Múltiplos métodos de pagamento
+- ✅ PWA (Progressive Web App)
+- ✅ Documentação da API (Swagger)
 
 ##  Estrutura do Projeto
 
@@ -97,6 +147,9 @@ projeto/
 │   │   ├── contracts/      # Módulo de contratos
 │   │   ├── messages/       # Módulo de mensagens
 │   │   ├── files/          # Módulo de arquivos
+│   │   ├── reviews/        # Módulo de avaliações
+│   │   ├── notifications/  # Módulo de notificações
+│   │   ├── payments/       # Módulo de pagamentos
 │   │   └── common/         # Utilitários comuns
 │   ├── uploads/            # Arquivos enviados
 │   └── Dockerfile
@@ -104,11 +157,21 @@ projeto/
 │   ├── lib/
 │   │   ├── core/           # Configurações e utilitários
 │   │   ├── features/       # Módulos de funcionalidades
-│   │   ├── shared/         # Componentes compartilhados
+│   │   │   ├── auth/       # Autenticação
+│   │   │   ├── home/       # Página inicial
+│   │   │   ├── profile/    # Perfil do usuário
+│   │   │   ├── services/   # Serviços
+│   │   │   ├── contracts/  # Contratos
+│   │   │   ├── messages/   # Mensagens
+│   │   │   ├── notifications/ # Notificações
+│   │   │   └── payments/   # Pagamentos
 │   │   └── main.dart
+│   ├── web/                # Configurações PWA
 │   └── Dockerfile
 ├── docker-compose.yml      # Orquestração dos serviços
 ├── .env.example           # Variáveis de ambiente
+├── ROADMAP.md             # Roadmap de desenvolvimento
+├── LICENSE                # Licença MIT
 └── README.md              # Este arquivo
 ```
 
@@ -136,6 +199,35 @@ projeto/
 - **Message**: Mensagens do chat
 - **Review**: Avaliações mútuas
 - **File**: Arquivos enviados
+- **Notification**: Notificações em tempo real
+- **Payment**: Pagamentos e transações financeiras
+
+##  Sistema de Pagamentos
+
+### Métodos de Pagamento Suportados
+- 📱 **PIX (Stripe)** - Integração oficial com Stripe
+- 📱 **PIX Direto** - Geração de código QR nativo
+- 💳 **Cartão de Crédito** - Via Stripe
+- 🏦 **Transferência Bancária**
+- ₿ **Bitcoin** - Criptomoeda
+- Ξ **Ethereum** - Criptomoeda
+
+### Funcionalidades de Pagamento
+- ✅ **Cálculo automático** de taxas da plataforma (5%)
+- ✅ **Confirmação automática** de pagamentos
+- ✅ **Histórico completo** de transações
+- ✅ **Estatísticas financeiras** em tempo real
+- ✅ **Notificações** de pagamentos recebidos
+- ✅ **Suporte a reembolsos** e estornos
+- ✅ **Integração com Stripe** para segurança
+
+### Status de Pagamento
+- ⏳ **Pendente** - Aguardando processamento
+- ⏳ **Processando** - Em andamento
+- ✅ **Concluído** - Pagamento confirmado
+- ❌ **Falhou** - Erro no processamento
+- 🚫 **Cancelado** - Cancelado pelo usuário
+- 🔄 **Reembolsado** - Valor devolvido
 
 ##  Configuração Docker
 
@@ -164,13 +256,27 @@ flutter pub get
 flutter run -d chrome
 ```
 
-##  Próximos Passos
+##  Status do Projeto
 
-- [ ] Implementar notificações em tempo real
-- [ ] Adicionar testes automatizados
-- [ ] Implementar paginação nas listagens
-- [ ] Adicionar filtros avançados de busca
-- [ ] Implementar sistema de notificações push
+### ✅ Implementado (v1.4.0)
+- [x] **MVP Completo** - Sistema básico de freelancers
+- [x] **Notificações em Tempo Real** - WebSocket + Socket.io
+- [x] **Sistema de Pagamentos** - Stripe + PIX + Criptomoedas
+- [x] **PWA** - Progressive Web App
+- [x] **Documentação da API** - Swagger
+
+### 🚧 Em Desenvolvimento
+- [ ] **Mobile Nativo** - App Android/iOS
+- [ ] **Notificações Push** - Firebase Cloud Messaging
+- [ ] **Câmera Integrada** - Upload de fotos
+- [ ] **Geolocalização** - Freelancers próximos
+
+### 📋 Próximos Passos
+- [ ] **IA e Automação** - Chatbot + Matching automático
+- [ ] **Analytics** - Business Intelligence
+- [ ] **Segurança Avançada** - 2FA + Biometria
+- [ ] **Internacionalização** - Multi-idiomas
+- [ ] **Testes Automatizados** - E2E + Unit Tests
 
 ##  Contribuição
 
