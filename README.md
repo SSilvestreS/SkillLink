@@ -102,38 +102,38 @@ docker-compose up --build
 ##  Funcionalidades
 
 ### Para Freelancers
-- ✅ Cadastro e login
-- ✅ Criação de perfil profissional
-- ✅ Cadastro de serviços
-- ✅ Visualização de propostas
-- ✅ Negociação de contratos
-- ✅ Upload de entregas
-- ✅ Avaliação de empresas
-- ✅ Recebimento de pagamentos
-- ✅ Notificações em tempo real
-- ✅ Estatísticas financeiras
+- Cadastro e login
+- Criação de perfil profissional
+- Cadastro de serviços
+- Visualização de propostas
+- Negociação de contratos
+- Upload de entregas
+- Avaliação de empresas
+- Recebimento de pagamentos
+- Notificações em tempo real
+- Estatísticas financeiras
 
 ### Para Empresas
-- ✅ Cadastro e login
-- ✅ Busca de freelancers
-- ✅ Solicitação de orçamentos
-- ✅ Criação de contratos
-- ✅ Acompanhamento de entregas
-- ✅ Avaliação de freelancers
-- ✅ Pagamento de contratos
-- ✅ Notificações em tempo real
-- ✅ Controle financeiro
+- Cadastro e login
+- Busca de freelancers
+- Solicitação de orçamentos
+- Criação de contratos
+- Acompanhamento de entregas
+- Avaliação de freelancers
+- Pagamento de contratos
+- Notificações em tempo real
+- Controle financeiro
 
 ### Funcionalidades Gerais
-- ✅ Sistema de mensagens
-- ✅ Histórico de contratos
-- ✅ Upload de arquivos
-- ✅ Controle de acesso por roles
-- ✅ Notificações em tempo real (WebSocket)
-- ✅ Sistema de pagamentos completo
-- ✅ Múltiplos métodos de pagamento
-- ✅ PWA (Progressive Web App)
-- ✅ Documentação da API (Swagger)
+- Sistema de mensagens
+- Histórico de contratos
+- Upload de arquivos
+- Controle de acesso por roles
+- Notificações em tempo real (WebSocket)
+- Sistema de pagamentos completo
+- Múltiplos métodos de pagamento
+- PWA (Progressive Web App)
+- Documentação da API (Swagger)
 
 ##  Estrutura do Projeto
 
@@ -205,29 +205,29 @@ projeto/
 ##  Sistema de Pagamentos
 
 ### Métodos de Pagamento Suportados
-- 📱 **PIX (Stripe)** - Integração oficial com Stripe
-- 📱 **PIX Direto** - Geração de código QR nativo
-- 💳 **Cartão de Crédito** - Via Stripe
-- 🏦 **Transferência Bancária**
-- ₿ **Bitcoin** - Criptomoeda
-- Ξ **Ethereum** - Criptomoeda
+-  **PIX (Stripe)** - Integração oficial com Stripe
+-  **PIX Direto** - Geração de código QR nativo
+-  **Cartão de Crédito** - Via Stripe
+-  **Transferência Bancária**
+-  **Bitcoin** - Criptomoeda
+-  **Ethereum** - Criptomoeda
 
 ### Funcionalidades de Pagamento
-- ✅ **Cálculo automático** de taxas da plataforma (5%)
-- ✅ **Confirmação automática** de pagamentos
-- ✅ **Histórico completo** de transações
-- ✅ **Estatísticas financeiras** em tempo real
-- ✅ **Notificações** de pagamentos recebidos
-- ✅ **Suporte a reembolsos** e estornos
-- ✅ **Integração com Stripe** para segurança
+- **Cálculo automático** de taxas da plataforma (5%)
+- **Confirmação automática** de pagamentos
+- **Histórico completo** de transações
+- **Estatísticas financeiras** em tempo real
+- **Notificações** de pagamentos recebidos
+- **Suporte a reembolsos** e estornos
+- **Integração com Stripe** para segurança
 
 ### Status de Pagamento
-- ⏳ **Pendente** - Aguardando processamento
-- ⏳ **Processando** - Em andamento
-- ✅ **Concluído** - Pagamento confirmado
-- ❌ **Falhou** - Erro no processamento
-- 🚫 **Cancelado** - Cancelado pelo usuário
-- 🔄 **Reembolsado** - Valor devolvido
+-  **Pendente** - Aguardando processamento
+-  **Processando** - Em andamento
+-  **Concluído** - Pagamento confirmado
+-  **Falhou** - Erro no processamento
+-  **Cancelado** - Cancelado pelo usuário
+-  **Reembolsado** - Valor devolvido
 
 ##  Configuração Docker
 
@@ -258,20 +258,20 @@ flutter run -d chrome
 
 ##  Status do Projeto
 
-### ✅ Implementado (v1.4.0)
+###  Implementado (v1.4.0)
 - [x] **MVP Completo** - Sistema básico de freelancers
 - [x] **Notificações em Tempo Real** - WebSocket + Socket.io
 - [x] **Sistema de Pagamentos** - Stripe + PIX + Criptomoedas
 - [x] **PWA** - Progressive Web App
 - [x] **Documentação da API** - Swagger
 
-### 🚧 Em Desenvolvimento
+###  Em Desenvolvimento
 - [ ] **Mobile Nativo** - App Android/iOS
 - [ ] **Notificações Push** - Firebase Cloud Messaging
 - [ ] **Câmera Integrada** - Upload de fotos
 - [ ] **Geolocalização** - Freelancers próximos
 
-### 📋 Próximos Passos
+###  Próximos Passos
 - [ ] **IA e Automação** - Chatbot + Matching automático
 - [ ] **Analytics** - Business Intelligence
 - [ ] **Segurança Avançada** - 2FA + Biometria
