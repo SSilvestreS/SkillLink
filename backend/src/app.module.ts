@@ -13,6 +13,7 @@ import { MessagesModule } from './messages/messages.module';
 import { FilesModule } from './files/files.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { PaymentsModule } from './payments/payments.module';
 
 import { User } from './users/entities/user.entity';
 import { Profile } from './users/entities/profile.entity';
@@ -22,6 +23,7 @@ import { Message } from './messages/entities/message.entity';
 import { Review } from './reviews/entities/review.entity';
 import { File } from './files/entities/file.entity';
 import { Notification } from './notifications/entities/notification.entity';
+import { Payment } from './payments/entities/payment.entity';
 
 @Module({
   imports: [
@@ -35,7 +37,7 @@ import { Notification } from './notifications/entities/notification.entity';
       username: process.env.DB_USERNAME || 'postgres',
       password: process.env.DB_PASSWORD || 'postgres',
       database: process.env.DB_DATABASE || 'skilllink',
-      entities: [User, Profile, Service, Contract, Message, Review, File, Notification],
+      entities: [User, Profile, Service, Contract, Message, Review, File, Notification, Payment],
       synchronize: process.env.NODE_ENV === 'development',
       logging: process.env.NODE_ENV === 'development',
     }),
@@ -54,6 +56,7 @@ import { Notification } from './notifications/entities/notification.entity';
     FilesModule,
     ReviewsModule,
     NotificationsModule,
+    PaymentsModule,
   ],
 })
 export class AppModule {}

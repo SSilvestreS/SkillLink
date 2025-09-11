@@ -14,6 +14,7 @@ import '../../features/contracts/presentation/pages/contract_detail_page.dart';
 import '../../features/messages/presentation/pages/messages_page.dart';
 import '../../features/messages/presentation/pages/chat_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
+import '../../features/payments/presentation/pages/payments_page.dart';
 import '../providers/auth_provider.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -109,6 +110,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/notifications',
         builder: (context, state) => const NotificationsPage(),
+      ),
+      
+      // Payments Routes
+      GoRoute(
+        path: '/payments',
+        builder: (context, state) => const PaymentsPage(),
       ),
     ],
   );
