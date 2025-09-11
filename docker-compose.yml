@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: skilllink_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: skilllink
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - skilllink_network
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: skilllink_api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=skilllink
+      - JWT_SECRET=your-super-secret-jwt-key-here
+      - JWT_EXPIRES_IN=7d
+      - PORT=3000
+      - MAX_FILE_SIZE=10485760
+      - UPLOAD_PATH=./uploads
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      - db
+    networks:
+      - skilllink_network
+
+  app:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: skilllink_app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./frontend:/app
+      - /app/.pub-cache
+    depends_on:
+      - api
+    networks:
+      - skilllink_network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  skilllink_network:
+    driver: bridge
