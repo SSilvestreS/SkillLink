@@ -14,6 +14,10 @@ import { FilesModule } from './files/files.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PaymentsModule } from './payments/payments.module';
+import { LoggerModule } from './core/logger/logger.module';
+import { CacheModule } from './core/cache/cache.module';
+import { RateLimitModule } from './core/rate-limit/rate-limit.module';
+import { HealthModule } from './core/health/health.module';
 
 import { User } from './users/entities/user.entity';
 import { Profile } from './users/entities/profile.entity';
@@ -57,6 +61,10 @@ import { Payment } from './payments/entities/payment.entity';
     ReviewsModule,
     NotificationsModule,
     PaymentsModule,
+    LoggerModule,
+    CacheModule,
+    RateLimitModule,
+    HealthModule,
   ],
 })
 export class AppModule {}
