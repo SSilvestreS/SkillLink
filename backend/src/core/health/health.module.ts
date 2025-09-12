@@ -8,5 +8,6 @@ import { HealthController } from './health.controller';
   imports: [CacheModule, TypeOrmModule],
   providers: [HealthService],
   controllers: [HealthController],
+  exports: [HealthService],
 })
 export class HealthModule {}

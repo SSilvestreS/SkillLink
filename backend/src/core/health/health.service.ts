@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CacheService } from '../cache/cache.service';
 import { DataSource } from 'typeorm';
+import { InjectDataSource } from '@nestjs/typeorm';
 
 export interface HealthCheckResult {
   status: 'ok' | 'error' | 'warning';
@@ -32,7 +33,7 @@ export class HealthService {
   constructor(
     private configService: ConfigService,
     private cacheService: CacheService,
-    private dataSource: DataSource,
+    @InjectDataSource() private dataSource: DataSource,
   ) {}
 
   async getHealth(): Promise<SystemHealth> {
