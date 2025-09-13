@@ -17,7 +17,8 @@ import { UpdateContractDto } from './dto/update-contract.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole, ContractStatus } from '../contracts/entities/contract.entity';
+import { UserRole } from '../users/entities/user.entity';
+import { ContractStatus } from './entities/contract.entity';
 
 @ApiTags('Contracts')
 @Controller('contracts')

@@ -7,6 +7,11 @@ import { Payment, PaymentStatus, PaymentMethod, PaymentType } from './entities/p
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 
+// Declaração de tipo para process
+declare const process: {
+  env: { [key: string]: string | undefined };
+};
+
 @Injectable()
 export class PaymentsService {
   private stripe: Stripe;
@@ -16,7 +21,7 @@ export class PaymentsService {
     private paymentRepository: Repository<Payment>,
     private notificationsService: NotificationsService,
   ) {
-    this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+    this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_default', {
       apiVersion: '2023-10-16',
     });
   }

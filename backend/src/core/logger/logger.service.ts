@@ -2,13 +2,19 @@ import { Injectable, LoggerService as NestLoggerService } from '@nestjs/common';
 import * as winston from 'winston';
 import * as path from 'path';
 
+// Declaração de tipo para process
+declare const process: {
+  env: { [key: string]: string | undefined };
+  cwd(): string;
+};
+
 @Injectable()
 export class LoggerService implements NestLoggerService {
   private readonly logger: winston.Logger;
 
   constructor() {
     this.logger = winston.createLogger({
-      level: process.env.LOG_LEVEL || 'info',
+      level: (process.env.LOG_LEVEL as string) || 'info',
       format: winston.format.combine(
         winston.format.timestamp({
           format: 'YYYY-MM-DD HH:mm:ss',

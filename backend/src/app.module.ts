@@ -1,9 +1,16 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { MulterModule } from '@nestjs/multer';
-import { ServeStaticModule } from '@nestjs/serve-static';
+import { MulterModule } from '@nestjs/platform-express';
 import { join } from 'path';
+
+// Declaração de tipo para process
+declare const process: {
+  env: { [key: string]: string | undefined };
+};
+
+// Declaração de tipo para __dirname
+declare const __dirname: string;
 
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
@@ -47,10 +54,6 @@ import { Payment } from './payments/entities/payment.entity';
     }),
     MulterModule.register({
       dest: './uploads',
-    }),
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'),
-      serveRoot: '/uploads',
     }),
     AuthModule,
     UsersModule,

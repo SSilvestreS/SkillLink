@@ -3,6 +3,11 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Response } from 'express';
 import { HealthService } from './health.service';
 
+// Declaração de tipo para process
+declare const process: {
+  uptime(): number;
+};
+
 @ApiTags('Health')
 @Controller('health')
 export class HealthController {
@@ -50,7 +55,7 @@ export class HealthController {
     res.status(HttpStatus.OK).json({ 
       status: 'alive',
       timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
+      uptime: Math.floor(process.uptime()),
     });
   }
 }

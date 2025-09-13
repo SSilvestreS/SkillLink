@@ -29,19 +29,19 @@ export class RateLimitInterceptor implements NestInterceptor {
     if (endpoint.includes('/auth/login')) {
       rateLimitResult = await this.rateLimitService.checkLoginRateLimit(ip, request.body?.email);
     } else if (endpoint.includes('/auth/register')) {
-      rateLimitResult = await this.rateLimitService.checkRegisterRateLimit(ip);
+      rateLimitResult = await this.rateLimitService.checkApiRateLimit(ip);
     } else if (endpoint.includes('/upload')) {
-      rateLimitResult = await this.rateLimitService.checkUploadRateLimit(ip, userId);
+      rateLimitResult = await this.rateLimitService.checkApiRateLimit(ip, userId);
     } else if (endpoint.includes('/payments')) {
-      rateLimitResult = await this.rateLimitService.checkPaymentRateLimit(userId);
+      rateLimitResult = await this.rateLimitService.checkApiRateLimit(ip, userId);
     } else {
       // Rate limit geral da API
       rateLimitResult = await this.rateLimitService.checkApiRateLimit(ip, userId);
     }
 
     if (!rateLimitResult.allowed) {
-      const resetTime = new Date(rateLimitResult.resetTime);
-      const retryAfter = Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000);
+      const resetTime = new Date(Date.now() + 15 * 60 * 1000); // 15 minutos
+      const retryAfter = 15 * 60; // 15 minutos em segundos
 
       throw new HttpException(
         {
@@ -59,7 +59,7 @@ export class RateLimitInterceptor implements NestInterceptor {
     const response = context.switchToHttp().getResponse();
     response.setHeader('X-RateLimit-Limit', '1000');
     response.setHeader('X-RateLimit-Remaining', rateLimitResult.remaining);
-    response.setHeader('X-RateLimit-Reset', new Date(rateLimitResult.resetTime).toISOString());
+    response.setHeader('X-RateLimit-Reset', new Date(Date.now() + 15 * 60 * 1000).toISOString());
 
     return next.handle();
   }

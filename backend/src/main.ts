@@ -3,6 +3,11 @@ import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
+// Declaração de tipo para process
+declare const process: {
+  env: { [key: string]: string | undefined };
+};
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
