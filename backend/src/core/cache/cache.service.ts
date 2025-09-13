@@ -23,7 +23,6 @@ export class CacheService {
         enableReadyCheck: false,
         maxRetriesPerRequest: 3,
         lazyConnect: true, // Conectar apenas quando necessário
-        retryDelayOnFailover: 100,
       });
 
       this.redis.on('connect', () => {
