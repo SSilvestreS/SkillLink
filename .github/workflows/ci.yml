@@ -76,10 +76,19 @@ jobs:
         run: |
           until pg_isready -h localhost -p 5432 -U postgres; do
             echo "Waiting for PostgreSQL to be ready..."
-            sleep 2
+            sleep 1
           done
+          echo "PostgreSQL is ready!"
         env:
           PGPASSWORD: postgres
+
+      - name: Wait for Redis
+        run: |
+          until nc -z localhost 6379; do
+            echo "Waiting for Redis to be ready..."
+            sleep 1
+          done
+          echo "Redis is ready!"
 
       - name: Setup PostgreSQL Database
         run: |
@@ -88,6 +97,16 @@ jobs:
           createdb -h localhost -U postgres -w skilllink_test
           # Verificar se o usuário postgres tem permissões
           psql -h localhost -U postgres -d skilllink_test -c "SELECT version();"
+        env:
+          PGPASSWORD: postgres
+
+      - name: Verify Services
+        run: |
+          echo "=== Verifying PostgreSQL ==="
+          psql -h localhost -U postgres -d skilllink_test -c "SELECT 'PostgreSQL is working' as status;"
+          echo "=== Verifying Redis ==="
+          redis-cli -h localhost -p 6379 ping
+          echo "=== Services verified successfully ==="
         env:
           PGPASSWORD: postgres
 
@@ -117,7 +136,7 @@ jobs:
 
       - name: Run all tests
         working-directory: ./backend
-        run: npm run test:ci
+        run: npm test -- --verbose --runInBand --detectOpenHandles --forceExit
         env:
           NODE_ENV: test
           DB_HOST: localhost
