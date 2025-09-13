@@ -54,7 +54,7 @@ describe('RateLimitService', () => {
     });
 
     it('should deny request when over limit', async () => {
-      const now = Date.now();
+      // const now = Date.now(); // Removido - não utilizado
       const config = {
         windowMs: 60000, // 1 minute
         maxRequests: 2,

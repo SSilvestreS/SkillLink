@@ -19,7 +19,7 @@ export class LoggingInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest<Request>();
     const response = context.switchToHttp().getResponse<Response>();
     const { method, url, ip } = request;
-    const userAgent = request.get('User-Agent') || '';
+    // const userAgent = request.get('User-Agent') || ''; // Removido - não utilizado
     const userId = (request as any).user?.id;
 
     const startTime = Date.now();

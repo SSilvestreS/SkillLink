@@ -199,7 +199,7 @@ export class HealthService {
       const os = await import('os');
       
       // Verificar espaço em disco do diretório atual
-      const stats = fs.statSync(process.cwd());
+      // const stats = fs.statSync(process.cwd()); // Removido - não utilizado
       const freeSpace = os.freemem();
       const totalSpace = os.totalmem();
       const usagePercentage = ((totalSpace - freeSpace) / totalSpace) * 100;

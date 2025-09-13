@@ -66,24 +66,24 @@ export class ValidationGuard implements CanActivate {
     }
   }
 
-  private getValidationClass(obj: any, type: string): any {
+  private getValidationClass(_obj: any, _type: string): any {
     // Mapear tipos para classes de validação
-    const validationMap = {
-      body: {
-        email: 'CreateUserDto',
-        password: 'CreateUserDto',
-        // Adicionar mais mapeamentos conforme necessário
-      },
-      query: {
-        page: 'PaginationDto',
-        limit: 'PaginationDto',
-        // Adicionar mais mapeamentos conforme necessário
-      },
-      params: {
-        id: 'IdParamDto',
-        // Adicionar mais mapeamentos conforme necessário
-      },
-    };
+    // const validationMap = {
+    //   body: {
+    //     email: 'CreateUserDto',
+    //     password: 'CreateUserDto',
+    //     // Adicionar mais mapeamentos conforme necessário
+    //   },
+    //   query: {
+    //     page: 'PaginationDto',
+    //     limit: 'PaginationDto',
+    //     // Adicionar mais mapeamentos conforme necessário
+    //   },
+    //   params: {
+    //     id: 'IdParamDto',
+    //     // Adicionar mais mapeamentos conforme necessário
+    //   },
+    // };
 
     // Lógica simples para determinar a classe de validação
     // Em um projeto real, isso seria mais sofisticado

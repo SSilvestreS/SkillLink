@@ -27,9 +27,8 @@ module.exports = {
       caughtErrorsIgnorePattern: '^_'
     }],
     '@typescript-eslint/no-empty-function': 'warn',
-    '@typescript-eslint/prefer-const': 'error',
     '@typescript-eslint/no-var-requires': 'off',
-    'prefer-const': 'off', // Desabilitar regra duplicada
+    'prefer-const': 'error',
     'no-var': 'error',
     'no-console': 'warn',
     'no-debugger': 'error',
