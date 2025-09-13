@@ -114,7 +114,7 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
   }
 
   // Method to send notification to contract participants
-  async sendToContract(contractId: string, notification: any, excludeUserId?: string) {
+  async sendToContract(contractId: string, notification: any, _excludeUserId?: string) {
     this.server.to(`contract_${contractId}`).emit('contract_notification', {
       ...notification,
       contractId,

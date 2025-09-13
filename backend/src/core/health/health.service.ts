@@ -195,7 +195,7 @@ export class HealthService {
 
   private async checkDisk(): Promise<HealthCheckResult> {
     try {
-      const fs = await import('fs');
+      // const fs = await import('fs'); // Removido - não utilizado
       const os = await import('os');
       
       // Verificar espaço em disco do diretório atual

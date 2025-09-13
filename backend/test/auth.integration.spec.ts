@@ -36,7 +36,7 @@ const mockCacheService = {
 describe('Auth Integration Tests', () => {
   let app: INestApplication;
   let authService: AuthService;
-  let usersService: UsersService;
+  // let usersService: UsersService; // Removido - não utilizado
 
   beforeAll(async () => {
     const module = await createTestingModule(
@@ -75,7 +75,7 @@ describe('Auth Integration Tests', () => {
 
     app = await createTestApp(module);
     authService = module.get<AuthService>(AuthService);
-    usersService = module.get<UsersService>(UsersService);
+    // usersService = module.get<UsersService>(UsersService); // Removido - não utilizado
   });
 
   afterAll(async () => {
