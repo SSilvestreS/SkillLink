@@ -66,9 +66,9 @@ jobs:
         run: npx tsc --noEmit
         continue-on-error: false
 
-      - name: Run unit tests
+      - name: Run all tests
         working-directory: ./backend
-        run: npm run test:unit -- --coverage --watchAll=false
+        run: npm run test:ci
         env:
           NODE_ENV: test
           DB_HOST: localhost
@@ -81,42 +81,6 @@ jobs:
           REDIS_HOST: localhost
           REDIS_PORT: 6379
         continue-on-error: false
-
-      - name: Run integration tests
-        working-directory: ./backend
-        run: npm run test:integration -- --coverage --watchAll=false
-        env:
-          NODE_ENV: test
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_USERNAME: postgres
-          DB_PASSWORD: postgres
-          DB_DATABASE: skilllink_test
-          JWT_SECRET: test-secret-key
-          JWT_EXPIRES_IN: 1h
-          REDIS_HOST: localhost
-          REDIS_PORT: 6379
-        continue-on-error: false
-
-      - name: Run E2E tests
-        working-directory: ./backend
-        run: npm run test:e2e -- --coverage --watchAll=false
-        env:
-          NODE_ENV: test
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_USERNAME: postgres
-          DB_PASSWORD: postgres
-          DB_DATABASE: skilllink_test
-          JWT_SECRET: test-secret-key
-          JWT_EXPIRES_IN: 1h
-          REDIS_HOST: localhost
-          REDIS_PORT: 6379
-        continue-on-error: false
-
-      - name: Generate coverage report
-        working-directory: ./backend
-        run: npm run test:cov
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
