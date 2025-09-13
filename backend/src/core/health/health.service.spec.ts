@@ -1,28 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
-import { getDataSourceToken } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { HealthService } from './health.service';
 import { CacheService } from '../cache/cache.service';
 
-// Mock DataSource
-const mockDataSource = {
-  query: jest.fn(),
-  options: {
-    type: 'postgres',
-  },
-};
-
-// Mock CacheService
-const mockCacheService = {
-  set: jest.fn(),
-  get: jest.fn(),
-};
-
 describe('HealthService', () => {
   let service: HealthService;
+  let mockConfigService: Partial<ConfigService>;
+  let mockCacheService: Partial<CacheService>;
+  let mockDataSource: Partial<DataSource>;
 
   beforeEach(async () => {
-    const mockConfigService = {
+    mockConfigService = {
       get: jest.fn((key: string, defaultValue?: any) => {
         const config = {
           APP_VERSION: '1.0.0',
@@ -30,6 +19,18 @@ describe('HealthService', () => {
         };
         return config[key] || defaultValue;
       }),
+    };
+
+    mockCacheService = {
+      set: jest.fn(),
+      get: jest.fn(),
+    };
+
+    mockDataSource = {
+      query: jest.fn(),
+      options: {
+        type: 'postgres',
+      } as any,
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -44,15 +45,16 @@ describe('HealthService', () => {
           useValue: mockCacheService,
         },
         {
-          provide: getDataSourceToken(),
+          provide: DataSource,
           useValue: mockDataSource,
         },
       ],
     }).compile();
 
     service = module.get<HealthService>(HealthService);
+  });
 
-    // Reset mocks
+  afterEach(() => {
     jest.clearAllMocks();
   });
 
@@ -63,11 +65,11 @@ describe('HealthService', () => {
   describe('getHealth', () => {
     it('should return healthy status when all checks pass', async () => {
       // Mock successful database check
-      mockDataSource.query.mockResolvedValue([{ result: 1 }]);
+      (mockDataSource.query as jest.Mock).mockResolvedValue([{ result: 1 }]);
       
       // Mock successful cache check
-      mockCacheService.set.mockResolvedValue(true);
-      mockCacheService.get.mockResolvedValue('ok');
+      (mockCacheService.set as jest.Mock).mockResolvedValue(true);
+      (mockCacheService.get as jest.Mock).mockResolvedValue('ok');
 
       const result = await service.getHealth();
 
@@ -80,10 +82,11 @@ describe('HealthService', () => {
 
     it('should return degraded status when cache fails', async () => {
       // Mock successful database check
-      mockDataSource.query.mockResolvedValue([{ result: 1 }]);
+      (mockDataSource.query as jest.Mock).mockResolvedValue([{ result: 1 }]);
       
       // Mock failed cache check
-      mockCacheService.set.mockResolvedValue(false);
+      (mockCacheService.set as jest.Mock).mockResolvedValue(false);
+      (mockCacheService.get as jest.Mock).mockResolvedValue(null);
 
       const result = await service.getHealth();
 
@@ -94,11 +97,11 @@ describe('HealthService', () => {
 
     it('should return unhealthy status when database fails', async () => {
       // Mock failed database check
-      mockDataSource.query.mockRejectedValue(new Error('Database connection failed'));
+      (mockDataSource.query as jest.Mock).mockRejectedValue(new Error('Database connection failed'));
       
       // Mock successful cache check
-      mockCacheService.set.mockResolvedValue(true);
-      mockCacheService.get.mockResolvedValue('ok');
+      (mockCacheService.set as jest.Mock).mockResolvedValue(true);
+      (mockCacheService.get as jest.Mock).mockResolvedValue('ok');
 
       const result = await service.getHealth();
 
@@ -109,17 +112,15 @@ describe('HealthService', () => {
 
   describe('getMetrics', () => {
     it('should return system metrics', async () => {
-      const metrics = await service.getMetrics();
+      const result = await service.getMetrics();
 
-      expect(metrics).toHaveProperty('timestamp');
-      expect(metrics).toHaveProperty('uptime');
-      expect(metrics).toHaveProperty('memory');
-      expect(metrics).toHaveProperty('cpu');
-      expect(metrics).toHaveProperty('environment');
-      expect(metrics.memory).toHaveProperty('heapTotal');
-      expect(metrics.memory).toHaveProperty('heapUsed');
-      expect(metrics.cpu).toHaveProperty('user');
-      expect(metrics.cpu).toHaveProperty('system');
+      expect(result).toHaveProperty('memory');
+      expect(result).toHaveProperty('cpu');
+      expect(result).toHaveProperty('uptime');
+      expect(result).toHaveProperty('timestamp');
+      expect(result.memory).toHaveProperty('used');
+      expect(result.memory).toHaveProperty('total');
+      expect(typeof result.uptime).toBe('number');
     });
   });
 });

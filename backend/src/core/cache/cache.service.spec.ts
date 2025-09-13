@@ -2,29 +2,25 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { CacheService } from './cache.service';
 
-// Mock Redis
-const mockRedis = {
-  get: jest.fn(),
-  set: jest.fn(),
-  setex: jest.fn(),
-  del: jest.fn(),
-  exists: jest.fn(),
-  flushall: jest.fn(),
-  keys: jest.fn(),
-  connect: jest.fn(),
-  disconnect: jest.fn(),
-  on: jest.fn(),
-  once: jest.fn(),
-};
-
-jest.mock('ioredis', () => {
-  return jest.fn().mockImplementation(() => mockRedis);
-});
-
 describe('CacheService', () => {
   let service: CacheService;
+  let mockRedis: any;
 
   beforeEach(async () => {
+    // Mock Redis completamente funcional
+    mockRedis = {
+      get: jest.fn(),
+      set: jest.fn(),
+      setex: jest.fn(),
+      del: jest.fn(),
+      exists: jest.fn(),
+      flushall: jest.fn(),
+      keys: jest.fn(),
+      ping: jest.fn().mockResolvedValue('PONG'),
+      on: jest.fn(),
+      once: jest.fn(),
+    };
+
     const mockConfigService = {
       get: jest.fn((key: string, defaultValue?: any) => {
         const config = {
@@ -35,21 +31,6 @@ describe('CacheService', () => {
         return config[key] || defaultValue;
       }),
     };
-
-    // Reset mocks
-    Object.values(mockRedis).forEach(mock => {
-      if (typeof mock === 'function') {
-        mock.mockClear();
-      }
-    });
-
-    // Mock successful connection
-    mockRedis.connect.mockResolvedValue(undefined);
-    mockRedis.on.mockImplementation((event, callback) => {
-      if (event === 'connect') {
-        setTimeout(() => callback(), 0);
-      }
-    });
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -62,6 +43,17 @@ describe('CacheService', () => {
     }).compile();
 
     service = module.get<CacheService>(CacheService);
+    
+    // Substituir o Redis real pelo mock
+    (service as any).redis = mockRedis;
+    (service as any).isConnected = true;
+    
+    // Mock initializeRedis para não tentar conectar
+    jest.spyOn(service, 'initializeRedis').mockResolvedValue(undefined);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   it('should be defined', () => {
@@ -88,13 +80,12 @@ describe('CacheService', () => {
     it('should return null on error', async () => {
       mockRedis.get.mockRejectedValue(new Error('Redis error'));
 
-      const result = await service.get('test-key');
+      const result = await service.get('error-key');
       expect(result).toBeNull();
     });
 
     it('should return null when Redis is not connected', async () => {
-      // Simular falha de conexão
-      mockRedis.connect.mockRejectedValue(new Error('Connection failed'));
+      (service as any).isConnected = false;
 
       const result = await service.get('test-key');
       expect(result).toBeNull();
@@ -108,23 +99,30 @@ describe('CacheService', () => {
 
       const result = await service.set('test-key', testData);
       expect(result).toBe(true);
-      expect(mockRedis.set).toHaveBeenCalledWith('test-key', JSON.stringify(testData));
+      expect(mockRedis.set).toHaveBeenCalledWith(
+        'test-key',
+        JSON.stringify(testData),
+      );
     });
 
     it('should set value with TTL', async () => {
       const testData = { id: 1, name: 'Test' };
-      const ttl = 3600;
+      const ttl = 60;
       mockRedis.setex.mockResolvedValue('OK');
 
       const result = await service.set('test-key', testData, ttl);
       expect(result).toBe(true);
-      expect(mockRedis.setex).toHaveBeenCalledWith('test-key', ttl, JSON.stringify(testData));
+      expect(mockRedis.setex).toHaveBeenCalledWith(
+        'test-key',
+        ttl,
+        JSON.stringify(testData),
+      );
     });
 
     it('should return false on error', async () => {
       mockRedis.set.mockRejectedValue(new Error('Redis error'));
 
-      const result = await service.set('test-key', 'test-value');
+      const result = await service.set('error-key', { test: 'data' });
       expect(result).toBe(false);
     });
   });
@@ -141,7 +139,7 @@ describe('CacheService', () => {
     it('should return false on error', async () => {
       mockRedis.del.mockRejectedValue(new Error('Redis error'));
 
-      const result = await service.del('test-key');
+      const result = await service.del('error-key');
       expect(result).toBe(false);
     });
   });
@@ -152,6 +150,7 @@ describe('CacheService', () => {
 
       const result = await service.exists('test-key');
       expect(result).toBe(true);
+      expect(mockRedis.exists).toHaveBeenCalledWith('test-key');
     });
 
     it('should return false when key does not exist', async () => {
@@ -164,7 +163,7 @@ describe('CacheService', () => {
     it('should return false on error', async () => {
       mockRedis.exists.mockRejectedValue(new Error('Redis error'));
 
-      const result = await service.exists('test-key');
+      const result = await service.exists('error-key');
       expect(result).toBe(false);
     });
   });
@@ -199,7 +198,7 @@ describe('CacheService', () => {
     it('should return empty array on error', async () => {
       mockRedis.keys.mockRejectedValue(new Error('Redis error'));
 
-      const result = await service.keys('test:*');
+      const result = await service.keys('error:*');
       expect(result).toEqual([]);
     });
   });

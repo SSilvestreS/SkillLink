@@ -48,7 +48,7 @@ describe('RateLimitService', () => {
       const result = await service.checkRateLimit('test-key', config);
 
       expect(result.allowed).toBe(true);
-      expect(result.remaining).toBe(9);
+      expect(result.remaining).toBe(9); // 10 - 1 (1 request adicionado)
       expect(mockCacheService.get).toHaveBeenCalledWith('rate_limit:test-key');
       expect(mockCacheService.set).toHaveBeenCalled();
     });
@@ -90,7 +90,7 @@ describe('RateLimitService', () => {
       const result = await service.checkRateLimit('test-key', config);
 
       expect(result.allowed).toBe(true);
-      expect(result.remaining).toBe(2); // 5 - 3 (2 recent + 1 new)
+      expect(result.remaining).toBe(2); // 5 - 3 (2 recent + 1 new = 3 total)
     });
 
     it('should handle cache errors gracefully', async () => {
@@ -121,7 +121,7 @@ describe('RateLimitService', () => {
       const result = await service.checkRateLimit('test-key', config);
 
       expect(result.allowed).toBe(true);
-      expect(result.remaining).toBe(9);
+      expect(result.remaining).toBe(9); // 10 - 1 (1 request adicionado)
     });
   });
 

@@ -57,7 +57,7 @@ export class RateLimitService {
 
       return {
         allowed: true,
-        remaining: config.maxRequests - validRequests.length - 1,
+        remaining: config.maxRequests - validRequests.length,
         resetTime: now + config.windowMs,
       };
     } catch (error) {
