@@ -4,10 +4,17 @@ import Redis from 'ioredis';
 
 @Injectable()
 export class CacheService {
-  private readonly redis: Redis;
+  private redis: Redis;
   private readonly logger = new Logger(CacheService.name);
+  private isConnected = false;
 
-  constructor(private configService: ConfigService) {
+  constructor(private configService: ConfigService) {}
+
+  private async initializeRedis(): Promise<void> {
+    if (this.redis && this.isConnected) {
+      return;
+    }
+
     this.redis = new Redis({
       host: this.configService.get('REDIS_HOST', 'localhost'),
       port: this.configService.get('REDIS_PORT', 6379),
@@ -19,15 +26,24 @@ export class CacheService {
 
     this.redis.on('connect', () => {
       this.logger.log('Redis connected successfully');
+      this.isConnected = true;
     });
 
     this.redis.on('error', (error) => {
       this.logger.error('Redis connection error:', error);
+      this.isConnected = false;
+    });
+
+    // Aguardar conexão inicial
+    await new Promise((resolve, reject) => {
+      this.redis.once('connect', resolve);
+      this.redis.once('error', reject);
     });
   }
 
   async get<T>(key: string): Promise<T | null> {
     try {
+      await this.initializeRedis();
       const value = await this.redis.get(key);
       return value ? JSON.parse(value) : null;
     } catch (error) {
@@ -38,6 +54,7 @@ export class CacheService {
 
   async set(key: string, value: any, ttl?: number): Promise<boolean> {
     try {
+      await this.initializeRedis();
       const serializedValue = JSON.stringify(value);
       if (ttl) {
         await this.redis.setex(key, ttl, serializedValue);
@@ -53,6 +70,7 @@ export class CacheService {
 
   async del(key: string): Promise<boolean> {
     try {
+      await this.initializeRedis();
       await this.redis.del(key);
       return true;
     } catch (error) {
@@ -63,6 +81,7 @@ export class CacheService {
 
   async exists(key: string): Promise<boolean> {
     try {
+      await this.initializeRedis();
       const result = await this.redis.exists(key);
       return result === 1;
     } catch (error) {
@@ -73,6 +92,7 @@ export class CacheService {
 
   async flush(): Promise<boolean> {
     try {
+      await this.initializeRedis();
       await this.redis.flushall();
       return true;
     } catch (error) {
@@ -83,6 +103,7 @@ export class CacheService {
 
   async keys(pattern: string): Promise<string[]> {
     try {
+      await this.initializeRedis();
       return await this.redis.keys(pattern);
     } catch (error) {
       this.logger.error(`Error getting keys with pattern ${pattern}:`, error);
@@ -136,6 +157,7 @@ export class CacheService {
 
   // Método para invalidar cache relacionado
   async invalidateUserCache(userId: string): Promise<void> {
+    await this.initializeRedis();
     const patterns = [
       `user:${userId}`,
       `user:${userId}:*`,
@@ -152,6 +174,8 @@ export class CacheService {
   }
 
   async disconnect(): Promise<void> {
-    await this.redis.disconnect();
+    if (this.redis) {
+      await this.redis.disconnect();
+    }
   }
 }

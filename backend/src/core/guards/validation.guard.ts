@@ -5,7 +5,6 @@ import {
   BadRequestException,
   Logger,
 } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 
@@ -13,7 +12,7 @@ import { plainToClass } from 'class-transformer';
 export class ValidationGuard implements CanActivate {
   private readonly logger = new Logger(ValidationGuard.name);
 
-  constructor(private reflector: Reflector) {}
+  constructor() {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();

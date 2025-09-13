@@ -8,13 +8,12 @@ import {
 import { Observable } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { Request, Response } from 'express';
-import { LoggerService } from '../logger/logger.service';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
   private readonly logger = new Logger(LoggingInterceptor.name);
 
-  constructor(private loggerService: LoggerService) {}
+  constructor() {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest<Request>();
@@ -26,10 +25,7 @@ export class LoggingInterceptor implements NestInterceptor {
     const startTime = Date.now();
 
     // Log da requisição
-    this.loggerService.log(
-      `Incoming Request: ${method} ${url}`,
-      'HTTP',
-    );
+    this.logger.log(`Incoming Request: ${method} ${url}`);
 
     return next.handle().pipe(
       tap(() => {
@@ -37,32 +33,16 @@ export class LoggingInterceptor implements NestInterceptor {
         const { statusCode } = response;
 
         // Log da resposta
-        this.loggerService.log(
-          `Outgoing Response: ${method} ${url} ${statusCode} - ${duration}ms`,
-          'HTTP',
-        );
+        this.logger.log(`Outgoing Response: ${method} ${url} ${statusCode} - ${duration}ms`);
 
         // Log de performance se demorar mais que 1 segundo
         if (duration > 1000) {
-          this.loggerService.performance(
-            `${method} ${url}`,
-            duration,
-            'HTTP',
-          );
+          this.logger.warn(`Slow request: ${method} ${url} - ${duration}ms`);
         }
 
         // Log de auditoria para operações importantes
         if (this.shouldAudit(method, url)) {
-          this.loggerService.audit(
-            `${method} ${url}`,
-            userId,
-            {
-              ip,
-              userAgent,
-              statusCode,
-              duration,
-            },
-          );
+          this.logger.log(`Audit: ${method} ${url} - User: ${userId} - IP: ${ip}`);
         }
       }),
       catchError((error) => {
@@ -70,24 +50,11 @@ export class LoggingInterceptor implements NestInterceptor {
         const statusCode = error.status || 500;
 
         // Log de erro
-        this.loggerService.error(
-          `Request Error: ${method} ${url} ${statusCode} - ${duration}ms`,
-          error.stack,
-          'HTTP',
-        );
+        this.logger.error(`Request Error: ${method} ${url} ${statusCode} - ${duration}ms`, error.stack);
 
         // Log de segurança para erros de autenticação/autorização
         if (statusCode === 401 || statusCode === 403) {
-          this.loggerService.security(
-            `Authentication/Authorization Error: ${method} ${url}`,
-            userId,
-            ip,
-            {
-              userAgent,
-              statusCode,
-              error: error.message,
-            },
-          );
+          this.logger.warn(`Security: Auth error ${method} ${url} - User: ${userId} - IP: ${ip}`);
         }
 
         throw error;
