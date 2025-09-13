@@ -1,59 +1,43 @@
-# Multi-stage build para otimizar tamanho da imagem
-FROM node:18-alpine AS base
+# Multi-stage build for production
+FROM node:18-alpine AS builder
 
-# Instalar dependências do sistema
-RUN apk add --no-cache \
-    dumb-init \
-    curl \
-    && addgroup -g 1001 -S nodejs \
-    && adduser -S nestjs -u 1001
-
-# Definir diretório de trabalho
 WORKDIR /app
 
-# Copiar arquivos de dependências
+# Copy package files
 COPY package*.json ./
 
-# Stage de dependências
-FROM base AS deps
+# Install dependencies
 RUN npm ci --only=production && npm cache clean --force
 
-# Stage de build
-FROM base AS build
-COPY package*.json ./
-RUN npm ci
+# Copy source code
 COPY . .
+
+# Build application
 RUN npm run build
 
-# Stage de desenvolvimento
-FROM base AS development
-RUN npm ci
-COPY . .
-EXPOSE 3000
-CMD ["npm", "run", "start:dev"]
+# Production stage
+FROM node:18-alpine AS production
 
-# Stage de produção
-FROM base AS production
+WORKDIR /app
 
-# Instalar dependências de produção
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/package*.json ./
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nestjs -u 1001
 
-# Criar diretórios necessários
-RUN mkdir -p /app/uploads /app/logs && \
-    chown -R nestjs:nodejs /app
+# Copy built application
+COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
+COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nestjs:nodejs /app/package*.json ./
 
-# Mudar para usuário não-root
+# Switch to non-root user
 USER nestjs
 
-# Expor porta
+# Expose port
 EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3000/health || exit 1
+  CMD node -e "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
-# Comando de inicialização
-ENTRYPOINT ["dumb-init", "--"]
+# Start application
 CMD ["node", "dist/main.js"]

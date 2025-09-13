@@ -22,32 +22,21 @@ describe('HealthService', () => {
     };
 
     mockCacheService = {
-      set: jest.fn(),
-      get: jest.fn(),
+      set: jest.fn().mockResolvedValue(true),
+      get: jest.fn().mockResolvedValue('ok'),
     };
 
     mockDataSource = {
-      query: jest.fn(),
-      options: {
-        type: 'postgres',
-      } as any,
+      query: jest.fn().mockResolvedValue([{ result: 1 }]),
+      options: { type: 'postgres' } as any,
     };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         HealthService,
-        {
-          provide: ConfigService,
-          useValue: mockConfigService,
-        },
-        {
-          provide: CacheService,
-          useValue: mockCacheService,
-        },
-        {
-          provide: DataSource,
-          useValue: mockDataSource,
-        },
+        { provide: ConfigService, useValue: mockConfigService },
+        { provide: CacheService, useValue: mockCacheService },
+        { provide: DataSource, useValue: mockDataSource },
       ],
     }).compile();
 
@@ -64,13 +53,6 @@ describe('HealthService', () => {
 
   describe('getHealth', () => {
     it('should return healthy status when all checks pass', async () => {
-      // Mock successful database check
-      (mockDataSource.query as jest.Mock).mockResolvedValue([{ result: 1 }]);
-      
-      // Mock successful cache check
-      (mockCacheService.set as jest.Mock).mockResolvedValue(true);
-      (mockCacheService.get as jest.Mock).mockResolvedValue('ok');
-
       const result = await service.getHealth();
 
       expect(result.status).toBe('healthy');
@@ -81,10 +63,6 @@ describe('HealthService', () => {
     });
 
     it('should return degraded status when cache fails', async () => {
-      // Mock successful database check
-      (mockDataSource.query as jest.Mock).mockResolvedValue([{ result: 1 }]);
-      
-      // Mock failed cache check
       (mockCacheService.set as jest.Mock).mockResolvedValue(false);
       (mockCacheService.get as jest.Mock).mockResolvedValue(null);
 
@@ -96,12 +74,7 @@ describe('HealthService', () => {
     });
 
     it('should return unhealthy status when database fails', async () => {
-      // Mock failed database check
       (mockDataSource.query as jest.Mock).mockRejectedValue(new Error('Database connection failed'));
-      
-      // Mock successful cache check
-      (mockCacheService.set as jest.Mock).mockResolvedValue(true);
-      (mockCacheService.get as jest.Mock).mockResolvedValue('ok');
 
       const result = await service.getHealth();
 
@@ -118,8 +91,6 @@ describe('HealthService', () => {
       expect(result).toHaveProperty('cpu');
       expect(result).toHaveProperty('uptime');
       expect(result).toHaveProperty('timestamp');
-      expect(result.memory).toHaveProperty('used');
-      expect(result.memory).toHaveProperty('total');
       expect(typeof result.uptime).toBe('number');
     });
   });

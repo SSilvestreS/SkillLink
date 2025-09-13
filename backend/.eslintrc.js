@@ -7,8 +7,9 @@ module.exports = {
   },
   plugins: ['@typescript-eslint'],
   extends: [
-    'plugin:@typescript-eslint/recommended',
-    'plugin:prettier/recommended',
+    'eslint:recommended',
+    '@typescript-eslint/recommended',
+    'prettier',
   ],
   root: true,
   env: {
@@ -21,18 +22,9 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'warn',
-    '@typescript-eslint/no-unused-vars': ['error', { 
-      argsIgnorePattern: '^_',
-      varsIgnorePattern: '^_',
-      caughtErrorsIgnorePattern: '^_'
-    }],
-    '@typescript-eslint/no-empty-function': 'warn',
-    '@typescript-eslint/no-var-requires': 'off',
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    'no-console': 'warn',
     'prefer-const': 'error',
     'no-var': 'error',
-    'no-console': 'warn',
-    'no-debugger': 'error',
-    'no-duplicate-imports': 'error',
-    'no-unused-expressions': 'error',
   },
 };

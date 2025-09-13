@@ -20,10 +20,7 @@ describe('LoggerService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         LoggerService,
-        {
-          provide: ConfigService,
-          useValue: mockConfigService,
-        },
+        { provide: ConfigService, useValue: mockConfigService },
       ],
     }).compile();
 
