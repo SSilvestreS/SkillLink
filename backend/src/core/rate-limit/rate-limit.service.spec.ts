@@ -61,7 +61,8 @@ describe('RateLimitService', () => {
       };
 
       // Mock cache with existing requests
-      const existingRequests = [now - 30000, now - 20000, now - 10000]; // 3 requests
+      const currentTime = Date.now();
+      const existingRequests = [currentTime - 30000, currentTime - 20000, currentTime - 10000]; // 3 requests
       mockCacheService.get.mockResolvedValue(existingRequests);
 
       const result = await service.checkRateLimit('test-key', config);
@@ -71,7 +72,7 @@ describe('RateLimitService', () => {
     });
 
     it('should filter out old requests', async () => {
-      // const now = Date.now(); // Removido - não utilizado
+      const currentTime = Date.now();
       const config = {
         windowMs: 60000, // 1 minute
         maxRequests: 5,
@@ -79,9 +80,9 @@ describe('RateLimitService', () => {
 
       // Mock cache with old and new requests
       const existingRequests = [
-        now - 70000, // Old request (outside window)
-        now - 30000, // Recent request
-        now - 20000, // Recent request
+        currentTime - 70000, // Old request (outside window)
+        currentTime - 30000, // Recent request
+        currentTime - 20000, // Recent request
       ];
       mockCacheService.get.mockResolvedValue(existingRequests);
       mockCacheService.set.mockResolvedValue(true);
@@ -181,16 +182,16 @@ describe('RateLimitService', () => {
   describe('getRateLimitStats', () => {
     it('should return rate limit statistics', async () => {
       // const now = Date.now(); // Removido - não utilizado
-      const requests = [now - 30000, now - 20000, now - 10000];
+      const currentTime = Date.now();
+      const requests = [currentTime - 30000, currentTime - 20000, currentTime - 10000];
       mockCacheService.get.mockResolvedValue(requests);
 
       const stats = await service.getRateLimitStats('test-key');
-
       expect(stats.totalRequests).toBe(3);
       expect(stats.requestsLastHour).toBe(3);
       expect(stats.requestsLastDay).toBe(3);
-      expect(stats.oldestRequest).toBe(now - 30000);
-      expect(stats.newestRequest).toBe(now - 10000);
+      expect(stats.oldestRequest).toBe(currentTime - 30000);
+      expect(stats.newestRequest).toBe(currentTime - 10000);
     });
   });
 });
