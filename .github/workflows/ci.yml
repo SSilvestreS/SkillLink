@@ -59,10 +59,16 @@ jobs:
       - name: Run linting
         working-directory: ./backend
         run: npm run lint
+        continue-on-error: false
+
+      - name: Run type checking
+        working-directory: ./backend
+        run: npx tsc --noEmit
+        continue-on-error: false
 
       - name: Run unit tests
         working-directory: ./backend
-        run: npm run test:unit
+        run: npm run test:unit -- --coverage --watchAll=false
         env:
           NODE_ENV: test
           DB_HOST: localhost
@@ -74,10 +80,11 @@ jobs:
           JWT_EXPIRES_IN: 1h
           REDIS_HOST: localhost
           REDIS_PORT: 6379
+        continue-on-error: false
 
       - name: Run integration tests
         working-directory: ./backend
-        run: npm run test:integration
+        run: npm run test:integration -- --coverage --watchAll=false
         env:
           NODE_ENV: test
           DB_HOST: localhost
@@ -89,10 +96,11 @@ jobs:
           JWT_EXPIRES_IN: 1h
           REDIS_HOST: localhost
           REDIS_PORT: 6379
+        continue-on-error: false
 
       - name: Run E2E tests
         working-directory: ./backend
-        run: npm run test:e2e
+        run: npm run test:e2e -- --coverage --watchAll=false
         env:
           NODE_ENV: test
           DB_HOST: localhost
@@ -104,6 +112,7 @@ jobs:
           JWT_EXPIRES_IN: 1h
           REDIS_HOST: localhost
           REDIS_PORT: 6379
+        continue-on-error: false
 
       - name: Generate coverage report
         working-directory: ./backend

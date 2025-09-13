@@ -195,13 +195,13 @@ export class HealthService {
 
   private async checkDisk(): Promise<HealthCheckResult> {
     try {
-      const fs = require('fs');
-      const path = require('path');
+      const fs = await import('fs');
+      const os = await import('os');
       
       // Verificar espaço em disco do diretório atual
       const stats = fs.statSync(process.cwd());
-      const freeSpace = require('os').freemem();
-      const totalSpace = require('os').totalmem();
+      const freeSpace = os.freemem();
+      const totalSpace = os.totalmem();
       const usagePercentage = ((totalSpace - freeSpace) / totalSpace) * 100;
 
       const status = usagePercentage > 95 ? 'error' : usagePercentage > 85 ? 'warning' : 'ok';

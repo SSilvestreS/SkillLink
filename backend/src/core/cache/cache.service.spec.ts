@@ -3,23 +3,26 @@ import { ConfigService } from '@nestjs/config';
 import { CacheService } from './cache.service';
 
 // Mock Redis
+const mockRedis = {
+  get: jest.fn(),
+  set: jest.fn(),
+  setex: jest.fn(),
+  del: jest.fn(),
+  exists: jest.fn(),
+  flushall: jest.fn(),
+  keys: jest.fn(),
+  connect: jest.fn(),
+  disconnect: jest.fn(),
+  on: jest.fn(),
+  once: jest.fn(),
+};
+
 jest.mock('ioredis', () => {
-  return jest.fn().mockImplementation(() => ({
-    get: jest.fn(),
-    set: jest.fn(),
-    setex: jest.fn(),
-    del: jest.fn(),
-    exists: jest.fn(),
-    flushall: jest.fn(),
-    keys: jest.fn(),
-    on: jest.fn(),
-    disconnect: jest.fn(),
-  }));
+  return jest.fn().mockImplementation(() => mockRedis);
 });
 
 describe('CacheService', () => {
   let service: CacheService;
-  let mockRedis: any;
 
   beforeEach(async () => {
     const mockConfigService = {
@@ -33,6 +36,21 @@ describe('CacheService', () => {
       }),
     };
 
+    // Reset mocks
+    Object.values(mockRedis).forEach(mock => {
+      if (typeof mock === 'function') {
+        mock.mockClear();
+      }
+    });
+
+    // Mock successful connection
+    mockRedis.connect.mockResolvedValue(undefined);
+    mockRedis.on.mockImplementation((event, callback) => {
+      if (event === 'connect') {
+        setTimeout(() => callback(), 0);
+      }
+    });
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CacheService,
@@ -44,7 +62,6 @@ describe('CacheService', () => {
     }).compile();
 
     service = module.get<CacheService>(CacheService);
-    mockRedis = (service as any).redis;
   });
 
   it('should be defined', () => {
@@ -70,6 +87,14 @@ describe('CacheService', () => {
 
     it('should return null on error', async () => {
       mockRedis.get.mockRejectedValue(new Error('Redis error'));
+
+      const result = await service.get('test-key');
+      expect(result).toBeNull();
+    });
+
+    it('should return null when Redis is not connected', async () => {
+      // Simular falha de conexão
+      mockRedis.connect.mockRejectedValue(new Error('Connection failed'));
 
       const result = await service.get('test-key');
       expect(result).toBeNull();

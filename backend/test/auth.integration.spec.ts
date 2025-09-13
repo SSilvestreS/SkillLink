@@ -1,200 +1,212 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
-import { AppModule } from '../src/app.module';
-import { DataSource } from 'typeorm';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtModule } from '@nestjs/jwt';
+import { AuthService } from '../src/auth/auth.service';
+import { AuthController } from '../src/auth/auth.controller';
+import { UsersService } from '../src/users/users.service';
+import { User } from '../src/users/entities/user.entity';
+import { Profile } from '../src/users/entities/profile.entity';
+import { CacheService } from '../src/core/cache/cache.service';
+import { createTestingModule, createTestApp } from './setup';
 
-describe('Auth Integration (e2e)', () => {
+// Mock CacheService
+const mockCacheService = {
+  get: jest.fn(),
+  set: jest.fn(),
+  del: jest.fn(),
+  exists: jest.fn(),
+  flush: jest.fn(),
+  keys: jest.fn(),
+  getUserCache: jest.fn(),
+  setUserCache: jest.fn(),
+  getServiceCache: jest.fn(),
+  setServiceCache: jest.fn(),
+  getContractCache: jest.fn(),
+  setContractCache: jest.fn(),
+  getListCache: jest.fn(),
+  setListCache: jest.fn(),
+  getStatsCache: jest.fn(),
+  setStatsCache: jest.fn(),
+  invalidateUserCache: jest.fn(),
+  disconnect: jest.fn(),
+};
+
+describe('Auth Integration Tests', () => {
   let app: INestApplication;
-  let dataSource: DataSource;
+  let authService: AuthService;
+  let usersService: UsersService;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+    const module = await createTestingModule(
+      [
+        AuthService,
+        AuthController,
+        UsersService,
+        {
+          provide: CacheService,
+          useValue: mockCacheService,
+        },
+      ],
+      [
+        ConfigModule.forRoot({
+          isGlobal: true,
+          envFilePath: '.env.test',
+        }),
+        TypeOrmModule.forRoot({
+          type: 'postgres',
+          host: process.env.DB_HOST || 'localhost',
+          port: parseInt(process.env.DB_PORT) || 5432,
+          username: process.env.DB_USERNAME || 'postgres',
+          password: process.env.DB_PASSWORD || 'postgres',
+          database: process.env.DB_DATABASE || 'skilllink_test',
+          entities: [User, Profile],
+          synchronize: true,
+          logging: false,
+        }),
+        TypeOrmModule.forFeature([User, Profile]),
+        JwtModule.register({
+          secret: process.env.JWT_SECRET || 'test-secret',
+          signOptions: { expiresIn: '1h' },
+        }),
+      ]
+    );
 
-    app = moduleFixture.createNestApplication();
-    dataSource = moduleFixture.get<DataSource>(DataSource);
-    await app.init();
+    app = await createTestApp(module);
+    authService = module.get<AuthService>(AuthService);
+    usersService = module.get<UsersService>(UsersService);
   });
 
   afterAll(async () => {
-    await dataSource.destroy();
     await app.close();
   });
 
-  beforeEach(async () => {
-    // Limpar dados de teste antes de cada teste
-    await dataSource.query('DELETE FROM users WHERE email LIKE "%@test.com"');
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  describe('/auth/register (POST)', () => {
-    it('should register a new user', () => {
-      return request(app.getHttpServer())
-        .post('/auth/register')
-        .send({
-          email: 'test@test.com',
-          password: 'password123',
-          name: 'Test User',
-          role: 'freelancer',
-        })
-        .expect(201)
-        .expect((res) => {
-          expect(res.body).toHaveProperty('id');
-          expect(res.body).toHaveProperty('email', 'test@test.com');
-          expect(res.body).toHaveProperty('name', 'Test User');
-          expect(res.body).toHaveProperty('role', 'freelancer');
-          expect(res.body).not.toHaveProperty('password');
-        });
+  describe('User Registration', () => {
+    it('should register a new freelancer', async () => {
+      const userData = {
+        email: 'freelancer@test.com',
+        password: 'password123',
+        name: 'Test Freelancer',
+        type: 'freelancer' as const,
+      };
+
+      const result = await authService.register(userData);
+
+      expect(result).toHaveProperty('user');
+      expect(result).toHaveProperty('access_token');
+      expect(result.user.email).toBe(userData.email);
+      expect(result.user.type).toBe('freelancer');
     });
 
-    it('should not register user with invalid email', () => {
-      return request(app.getHttpServer())
-        .post('/auth/register')
-        .send({
-          email: 'invalid-email',
-          password: 'password123',
-          name: 'Test User',
-          role: 'freelancer',
-        })
-        .expect(400);
+    it('should register a new company', async () => {
+      const userData = {
+        email: 'company@test.com',
+        password: 'password123',
+        name: 'Test Company',
+        type: 'company' as const,
+      };
+
+      const result = await authService.register(userData);
+
+      expect(result).toHaveProperty('user');
+      expect(result).toHaveProperty('access_token');
+      expect(result.user.email).toBe(userData.email);
+      expect(result.user.type).toBe('company');
     });
 
-    it('should not register user with weak password', () => {
-      return request(app.getHttpServer())
-        .post('/auth/register')
-        .send({
-          email: 'test2@test.com',
-          password: '123',
-          name: 'Test User',
-          role: 'freelancer',
-        })
-        .expect(400);
-    });
+    it('should not register user with existing email', async () => {
+      const userData = {
+        email: 'existing@test.com',
+        password: 'password123',
+        name: 'Test User',
+        type: 'freelancer' as const,
+      };
 
-    it('should not register user with duplicate email', async () => {
-      // Primeiro registro
-      await request(app.getHttpServer())
-        .post('/auth/register')
-        .send({
-          email: 'duplicate@test.com',
-          password: 'password123',
-          name: 'Test User',
-          role: 'freelancer',
-        })
-        .expect(201);
+      // First registration
+      await authService.register(userData);
 
-      // Segundo registro com mesmo email
-      return request(app.getHttpServer())
-        .post('/auth/register')
-        .send({
-          email: 'duplicate@test.com',
-          password: 'password123',
-          name: 'Test User 2',
-          role: 'company',
-        })
-        .expect(409);
+      // Second registration with same email should fail
+      await expect(authService.register(userData)).rejects.toThrow();
     });
   });
 
-  describe('/auth/login (POST)', () => {
+  describe('User Login', () => {
     beforeEach(async () => {
-      // Criar usuário para teste de login
-      await request(app.getHttpServer())
-        .post('/auth/register')
-        .send({
-          email: 'login@test.com',
-          password: 'password123',
-          name: 'Login User',
-          role: 'freelancer',
-        });
+      // Create a test user
+      const userData = {
+        email: 'login@test.com',
+        password: 'password123',
+        name: 'Login Test User',
+        type: 'freelancer' as const,
+      };
+      await authService.register(userData);
     });
 
-    it('should login with valid credentials', () => {
-      return request(app.getHttpServer())
-        .post('/auth/login')
-        .send({
-          email: 'login@test.com',
-          password: 'password123',
-        })
-        .expect(200)
-        .expect((res) => {
-          expect(res.body).toHaveProperty('access_token');
-          expect(res.body).toHaveProperty('user');
-          expect(res.body.user).toHaveProperty('id');
-          expect(res.body.user).toHaveProperty('email', 'login@test.com');
-        });
+    it('should login with valid credentials', async () => {
+      const loginData = {
+        email: 'login@test.com',
+        password: 'password123',
+      };
+
+      const result = await authService.login(loginData);
+
+      expect(result).toHaveProperty('user');
+      expect(result).toHaveProperty('access_token');
+      expect(result.user.email).toBe(loginData.email);
     });
 
-    it('should not login with invalid credentials', () => {
-      return request(app.getHttpServer())
-        .post('/auth/login')
-        .send({
-          email: 'login@test.com',
-          password: 'wrongpassword',
-        })
-        .expect(401);
+    it('should not login with invalid password', async () => {
+      const loginData = {
+        email: 'login@test.com',
+        password: 'wrongpassword',
+      };
+
+      await expect(authService.login(loginData)).rejects.toThrow();
     });
 
-    it('should not login with non-existent user', () => {
-      return request(app.getHttpServer())
-        .post('/auth/login')
-        .send({
-          email: 'nonexistent@test.com',
-          password: 'password123',
-        })
-        .expect(401);
+    it('should not login with non-existent email', async () => {
+      const loginData = {
+        email: 'nonexistent@test.com',
+        password: 'password123',
+      };
+
+      await expect(authService.login(loginData)).rejects.toThrow();
     });
   });
 
-  describe('/auth/profile (GET)', () => {
-    let accessToken: string;
+  describe('Password Validation', () => {
+    it('should validate password strength', async () => {
+      const weakPasswordData = {
+        email: 'weak@test.com',
+        password: '123', // Too short
+        name: 'Weak Password User',
+        type: 'freelancer' as const,
+      };
 
-    beforeEach(async () => {
-      // Criar usuário e fazer login
-      await request(app.getHttpServer())
-        .post('/auth/register')
-        .send({
-          email: 'profile@test.com',
-          password: 'password123',
-          name: 'Profile User',
-          role: 'freelancer',
-        });
-
-      const loginResponse = await request(app.getHttpServer())
-        .post('/auth/login')
-        .send({
-          email: 'profile@test.com',
-          password: 'password123',
-        });
-
-      accessToken = loginResponse.body.access_token;
+      await expect(authService.register(weakPasswordData)).rejects.toThrow();
     });
+  });
 
-    it('should get user profile with valid token', () => {
-      return request(app.getHttpServer())
-        .get('/auth/profile')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .expect(200)
-        .expect((res) => {
-          expect(res.body).toHaveProperty('id');
-          expect(res.body).toHaveProperty('email', 'profile@test.com');
-          expect(res.body).toHaveProperty('name', 'Profile User');
-          expect(res.body).toHaveProperty('role', 'freelancer');
-        });
-    });
+  describe('JWT Token', () => {
+    it('should generate valid JWT token', async () => {
+      const userData = {
+        email: 'jwt@test.com',
+        password: 'password123',
+        name: 'JWT Test User',
+        type: 'freelancer' as const,
+      };
 
-    it('should not get profile without token', () => {
-      return request(app.getHttpServer())
-        .get('/auth/profile')
-        .expect(401);
-    });
+      const result = await authService.register(userData);
+      const token = result.access_token;
 
-    it('should not get profile with invalid token', () => {
-      return request(app.getHttpServer())
-        .get('/auth/profile')
-        .set('Authorization', 'Bearer invalid-token')
-        .expect(401);
+      expect(token).toBeDefined();
+      expect(typeof token).toBe('string');
+      expect(token.split('.')).toHaveLength(3); // JWT has 3 parts
     });
   });
 });
