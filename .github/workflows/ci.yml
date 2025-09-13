@@ -156,7 +156,7 @@ jobs:
 
       - name: Run all tests
         working-directory: ./backend
-        run: timeout 300 npm test -- --verbose --runInBand --detectOpenHandles --forceExit --testTimeout=30000 --maxWorkers=1
+        run: timeout 300 npm test -- --verbose --runInBand --detectOpenHandles --forceExit --testTimeout=30000
         env:
           NODE_ENV: test
           DB_HOST: localhost
