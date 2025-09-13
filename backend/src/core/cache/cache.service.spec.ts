@@ -48,8 +48,7 @@ describe('CacheService', () => {
     (service as any).redis = mockRedis;
     (service as any).isConnected = true;
     
-    // Mock initializeRedis para não tentar conectar
-    jest.spyOn(service, 'initializeRedis').mockResolvedValue(undefined);
+    // Mock Redis diretamente - initializeRedis é privado
   });
 
   afterEach(() => {
