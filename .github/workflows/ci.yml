@@ -72,6 +72,15 @@ jobs:
         run: npx tsc --noEmit
         continue-on-error: false
 
+      - name: Wait for PostgreSQL
+        run: |
+          until pg_isready -h localhost -p 5432 -U postgres; do
+            echo "Waiting for PostgreSQL to be ready..."
+            sleep 2
+          done
+        env:
+          PGPASSWORD: postgres
+
       - name: Run all tests
         working-directory: ./backend
         run: npm run test:ci
@@ -86,6 +95,10 @@ jobs:
           JWT_EXPIRES_IN: 1h
           REDIS_HOST: localhost
           REDIS_PORT: 6379
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGDATABASE: skilllink_test
+          PGHOST: localhost
         continue-on-error: false
 
       - name: Upload coverage to Codecov
