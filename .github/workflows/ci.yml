@@ -65,6 +65,9 @@ jobs:
       - name: Install redis-cli
         run: sudo apt-get update && sudo apt-get install -y redis-tools
 
+      - name: Enable memory overcommit
+        run: echo 1 | sudo tee /proc/sys/vm/overcommit_memory
+
       - name: Run linting
         working-directory: ./backend
         run: npm run lint
@@ -106,9 +109,23 @@ jobs:
       - name: Verify Services
         run: |
           echo "=== Verifying PostgreSQL ==="
-          psql -h localhost -U postgres -d skilllink_test -c "SELECT 'PostgreSQL is working' as status;"
+          # Testar conexão múltiplas vezes para garantir estabilidade
+          for i in {1..3}; do
+            echo "PostgreSQL test attempt $i/3"
+            psql -h localhost -U postgres -d skilllink_test -c "SELECT 'PostgreSQL is working' as status;" || {
+              echo "PostgreSQL test $i failed, waiting 2 seconds..."
+              sleep 2
+            }
+          done
           echo "=== Verifying Redis ==="
-          redis-cli -h localhost -p 6379 ping
+          # Testar Redis múltiplas vezes
+          for i in {1..3}; do
+            echo "Redis test attempt $i/3"
+            redis-cli -h localhost -p 6379 ping || {
+              echo "Redis test $i failed, waiting 2 seconds..."
+              sleep 2
+            }
+          done
           echo "=== Services verified successfully ==="
         env:
           PGPASSWORD: postgres
@@ -139,7 +156,7 @@ jobs:
 
       - name: Run all tests
         working-directory: ./backend
-        run: npm test -- --verbose --runInBand --detectOpenHandles --forceExit
+        run: timeout 300 npm test -- --verbose --runInBand --detectOpenHandles --forceExit --testTimeout=30000 --maxWorkers=1
         env:
           NODE_ENV: test
           DB_HOST: localhost

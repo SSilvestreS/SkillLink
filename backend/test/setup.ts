@@ -53,6 +53,9 @@ beforeAll(async () => {
 afterAll(async () => {
   // Cleanup global
   jest.clearAllMocks();
+  
+  // Aguardar um pouco para garantir que todas as conexões sejam fechadas
+  await new Promise(resolve => setTimeout(resolve, 1000));
 });
 
 // Helper para criar módulo de teste
