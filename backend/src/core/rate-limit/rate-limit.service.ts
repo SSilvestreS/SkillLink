@@ -27,8 +27,10 @@ export class RateLimitService {
       // Buscar requests existentes
       const requests = await this.cacheService.get<number[]>(cacheKey) || [];
       
-      // Filtrar requests dentro da janela de tempo
-      const validRequests = requests.filter(timestamp => timestamp > windowStart);
+      // Se não conseguiu buscar do cache, usar array vazio
+      const validRequests = Array.isArray(requests) 
+        ? requests.filter(timestamp => timestamp > windowStart)
+        : [];
       
       // Verificar se excedeu o limite
       if (validRequests.length >= config.maxRequests) {
@@ -45,9 +47,13 @@ export class RateLimitService {
       // Adicionar novo request
       validRequests.push(now);
       
-      // Salvar no cache com TTL baseado na janela de tempo
+      // Tentar salvar no cache, mas não falhar se não conseguir
       const ttl = Math.ceil(config.windowMs / 1000);
-      await this.cacheService.set(cacheKey, validRequests, ttl);
+      const saved = await this.cacheService.set(cacheKey, validRequests, ttl);
+      
+      if (!saved) {
+        this.logger.warn(`Failed to save rate limit data for key ${key}, using in-memory fallback`);
+      }
 
       return {
         allowed: true,

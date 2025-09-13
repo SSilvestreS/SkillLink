@@ -22,6 +22,7 @@ export class CacheService {
       retryDelayOnFailover: 100,
       enableReadyCheck: false,
       maxRetriesPerRequest: null,
+      lazyConnect: true, // Conectar apenas quando necessário
     });
 
     this.redis.on('connect', () => {
@@ -34,16 +35,22 @@ export class CacheService {
       this.isConnected = false;
     });
 
-    // Aguardar conexão inicial
-    await new Promise((resolve, reject) => {
-      this.redis.once('connect', resolve);
-      this.redis.once('error', reject);
-    });
+    // Tentar conectar, mas não falhar se não conseguir
+    try {
+      await this.redis.connect();
+    } catch (error) {
+      this.logger.warn('Redis connection failed, will retry on next operation:', error.message);
+      this.isConnected = false;
+    }
   }
 
   async get<T>(key: string): Promise<T | null> {
     try {
       await this.initializeRedis();
+      if (!this.isConnected) {
+        this.logger.warn(`Redis not connected, returning null for key: ${key}`);
+        return null;
+      }
       const value = await this.redis.get(key);
       return value ? JSON.parse(value) : null;
     } catch (error) {
@@ -55,6 +62,10 @@ export class CacheService {
   async set(key: string, value: any, ttl?: number): Promise<boolean> {
     try {
       await this.initializeRedis();
+      if (!this.isConnected) {
+        this.logger.warn(`Redis not connected, skipping set for key: ${key}`);
+        return false;
+      }
       const serializedValue = JSON.stringify(value);
       if (ttl) {
         await this.redis.setex(key, ttl, serializedValue);
@@ -71,6 +82,10 @@ export class CacheService {
   async del(key: string): Promise<boolean> {
     try {
       await this.initializeRedis();
+      if (!this.isConnected) {
+        this.logger.warn(`Redis not connected, skipping delete for key: ${key}`);
+        return false;
+      }
       await this.redis.del(key);
       return true;
     } catch (error) {
@@ -82,6 +97,10 @@ export class CacheService {
   async exists(key: string): Promise<boolean> {
     try {
       await this.initializeRedis();
+      if (!this.isConnected) {
+        this.logger.warn(`Redis not connected, returning false for exists check: ${key}`);
+        return false;
+      }
       const result = await this.redis.exists(key);
       return result === 1;
     } catch (error) {
@@ -93,6 +112,10 @@ export class CacheService {
   async flush(): Promise<boolean> {
     try {
       await this.initializeRedis();
+      if (!this.isConnected) {
+        this.logger.warn('Redis not connected, skipping flush');
+        return false;
+      }
       await this.redis.flushall();
       return true;
     } catch (error) {
@@ -104,6 +127,10 @@ export class CacheService {
   async keys(pattern: string): Promise<string[]> {
     try {
       await this.initializeRedis();
+      if (!this.isConnected) {
+        this.logger.warn(`Redis not connected, returning empty array for pattern: ${pattern}`);
+        return [];
+      }
       return await this.redis.keys(pattern);
     } catch (error) {
       this.logger.error(`Error getting keys with pattern ${pattern}:`, error);
@@ -158,6 +185,11 @@ export class CacheService {
   // Método para invalidar cache relacionado
   async invalidateUserCache(userId: string): Promise<void> {
     await this.initializeRedis();
+    if (!this.isConnected) {
+      this.logger.warn(`Redis not connected, skipping cache invalidation for user: ${userId}`);
+      return;
+    }
+    
     const patterns = [
       `user:${userId}`,
       `user:${userId}:*`,

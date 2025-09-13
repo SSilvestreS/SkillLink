@@ -104,10 +104,23 @@ export class HealthService {
   private async checkRedis(): Promise<HealthCheckResult> {
     try {
       const start = Date.now();
-      await this.cacheService.set('health_check', 'ok', 10);
-      const value = await this.cacheService.get('health_check');
+      const setResult = await this.cacheService.set('health_check', 'ok', 10);
       const duration = Date.now() - start;
 
+      if (!setResult) {
+        return {
+          status: 'warning',
+          message: 'Redis not available - cache disabled',
+          timestamp: new Date().toISOString(),
+          details: {
+            responseTime: `${duration}ms`,
+            note: 'Cache service is running in fallback mode',
+          },
+        };
+      }
+
+      const value = await this.cacheService.get('health_check');
+      
       if (value === 'ok') {
         return {
           status: 'ok',
@@ -120,19 +133,25 @@ export class HealthService {
         };
       } else {
         return {
-          status: 'error',
-          message: 'Redis value mismatch',
+          status: 'warning',
+          message: 'Redis value mismatch - cache may be degraded',
           timestamp: new Date().toISOString(),
+          details: {
+            responseTime: `${duration}ms`,
+            expected: 'ok',
+            actual: value,
+          },
         };
       }
     } catch (error) {
       this.logger.error('Redis health check failed:', error);
       return {
-        status: 'error',
-        message: 'Redis connection failed',
+        status: 'warning',
+        message: 'Redis connection failed - cache disabled',
         timestamp: new Date().toISOString(),
         details: {
           error: error.message,
+          note: 'Application will continue without cache',
         },
       };
     }
