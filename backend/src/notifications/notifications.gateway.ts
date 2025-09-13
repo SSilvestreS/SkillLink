@@ -8,11 +8,11 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { UseGuards } from '@nestjs/common';
+// import { UseGuards } from '@nestjs/common'; // Removido - não utilizado
 import { JwtService } from '@nestjs/jwt';
 
 import { NotificationsService } from './notifications.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+// import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'; // Removido - não utilizado
 
 @WebSocketGateway({
   cors: {

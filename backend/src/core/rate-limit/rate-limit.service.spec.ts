@@ -35,7 +35,7 @@ describe('RateLimitService', () => {
 
   describe('checkRateLimit', () => {
     it('should allow request when under limit', async () => {
-      const now = Date.now();
+      // const now = Date.now(); // Removido - não utilizado
       const config = {
         windowMs: 60000, // 1 minute
         maxRequests: 10,

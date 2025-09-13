@@ -2,7 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
-  BadRequestException,
+  // BadRequestException, // Removido - não utilizado
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -32,7 +32,7 @@ export class AuthService {
     });
 
     if (user && (await bcrypt.compare(password, user.password))) {
-      const { password: _, ...result } = user;
+      const { password: _password, ...result } = user;
       return result;
     }
     return null;
@@ -143,7 +143,7 @@ export class AuthService {
       throw new UnauthorizedException('Usuário não encontrado');
     }
 
-    const { password: _, ...result } = user;
+    const { password: _password, ...result } = user;
     return result;
   }
 

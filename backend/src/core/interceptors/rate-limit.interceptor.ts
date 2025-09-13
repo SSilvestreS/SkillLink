@@ -21,7 +21,7 @@ export class RateLimitInterceptor implements NestInterceptor {
 
     // Configuração de rate limit baseada no endpoint
     const endpoint = request.route?.path || request.path;
-    const method = request.method;
+    // const method = request.method; // Removido - não utilizado
 
     let rateLimitResult;
 

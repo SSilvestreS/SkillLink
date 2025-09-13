@@ -2,15 +2,15 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MulterModule } from '@nestjs/platform-express';
-import { join } from 'path';
+// import { join } from 'path'; // Removido - não utilizado
 
 // Declaração de tipo para process
 declare const process: {
   env: { [key: string]: string | undefined };
 };
 
-// Declaração de tipo para __dirname
-declare const __dirname: string;
+// Declaração de tipo para __dirname - removido pois não utilizado
+// declare const __dirname: string;
 
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
