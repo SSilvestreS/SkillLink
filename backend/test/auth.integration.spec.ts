@@ -64,6 +64,11 @@ describe('Auth Integration Tests', () => {
           entities: [User, Profile],
           synchronize: true,
           logging: false,
+          extra: {
+            max: 20,
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 2000,
+          },
         }),
         TypeOrmModule.forFeature([User, Profile]),
         JwtModule.register({
