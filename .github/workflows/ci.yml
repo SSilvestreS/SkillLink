@@ -28,9 +28,9 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: skilllink_test
-          POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+          POSTGRES_INITDB_ARGS: "--auth-host=md5"
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U postgres"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -80,6 +80,39 @@ jobs:
           done
         env:
           PGPASSWORD: postgres
+
+      - name: Setup PostgreSQL Database
+        run: |
+          # Criar banco de dados se não existir
+          createdb -h localhost -U postgres -w skilllink_test || echo "Database already exists"
+          # Verificar se o usuário postgres tem permissões
+          psql -h localhost -U postgres -d skilllink_test -c "SELECT version();"
+        env:
+          PGPASSWORD: postgres
+
+      - name: Debug Environment Variables
+        run: |
+          echo "DB_USERNAME: $DB_USERNAME"
+          echo "DB_PASSWORD: $DB_PASSWORD"
+          echo "DB_DATABASE: $DB_DATABASE"
+          echo "DB_HOST: $DB_HOST"
+          echo "PGUSER: $PGUSER"
+          echo "PGDATABASE: $PGDATABASE"
+        env:
+          NODE_ENV: test
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USERNAME: postgres
+          DB_PASSWORD: postgres
+          DB_DATABASE: skilllink_test
+          JWT_SECRET: test-secret-key
+          JWT_EXPIRES_IN: 1h
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGDATABASE: skilllink_test
+          PGHOST: localhost
 
       - name: Run all tests
         working-directory: ./backend
