@@ -66,7 +66,9 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y redis-tools
 
       - name: Enable memory overcommit
-        run: echo 1 | sudo tee /proc/sys/vm/overcommit_memory
+        run: |
+          sudo sysctl -w vm.overcommit_memory=1
+          echo "Memory overcommit enabled for Redis"
 
       - name: Run linting
         working-directory: ./backend
@@ -80,21 +82,33 @@ jobs:
 
       - name: Wait for PostgreSQL
         run: |
-          until pg_isready -h localhost -p 5432 -U postgres; do
-            echo "Waiting for PostgreSQL to be ready..."
-            sleep 1
+          echo "Waiting for PostgreSQL to be ready..."
+          for i in {1..10}; do
+            if pg_isready -h localhost -p 5432 -U postgres -d skilllink_test; then
+              echo "PostgreSQL is ready!"
+              exit 0
+            fi
+            echo "PostgreSQL not ready, attempt $i/10, retrying in 2s..."
+            sleep 2
           done
-          echo "PostgreSQL is ready!"
+          echo "PostgreSQL failed to start after 10 attempts"
+          exit 1
         env:
           PGPASSWORD: postgres
 
       - name: Wait for Redis
         run: |
-          until nc -z localhost 6379; do
-            echo "Waiting for Redis to be ready..."
-            sleep 1
+          echo "Waiting for Redis to be ready..."
+          for i in {1..10}; do
+            if redis-cli -h localhost -p 6379 ping > /dev/null 2>&1; then
+              echo "Redis is ready!"
+              exit 0
+            fi
+            echo "Redis not ready, attempt $i/10, retrying in 2s..."
+            sleep 2
           done
-          echo "Redis is ready!"
+          echo "Redis failed to start after 10 attempts"
+          exit 1
 
       - name: Setup PostgreSQL Database
         run: |
@@ -108,25 +122,12 @@ jobs:
 
       - name: Verify Services
         run: |
-          echo "=== Verifying PostgreSQL ==="
-          # Testar conexão múltiplas vezes para garantir estabilidade
-          for i in {1..3}; do
-            echo "PostgreSQL test attempt $i/3"
-            psql -h localhost -U postgres -d skilllink_test -c "SELECT 'PostgreSQL is working' as status;" || {
-              echo "PostgreSQL test $i failed, waiting 2 seconds..."
-              sleep 2
-            }
-          done
-          echo "=== Verifying Redis ==="
-          # Testar Redis múltiplas vezes
-          for i in {1..3}; do
-            echo "Redis test attempt $i/3"
-            redis-cli -h localhost -p 6379 ping || {
-              echo "Redis test $i failed, waiting 2 seconds..."
-              sleep 2
-            }
-          done
-          echo "=== Services verified successfully ==="
+          echo "=== Final verification of services ==="
+          echo "Testing PostgreSQL connection..."
+          psql -h localhost -U postgres -d skilllink_test -c "SELECT 'PostgreSQL is working' as status;"
+          echo "Testing Redis connection..."
+          redis-cli -h localhost -p 6379 ping
+          echo "=== All services verified successfully ==="
         env:
           PGPASSWORD: postgres
 
