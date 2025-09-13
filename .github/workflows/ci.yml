@@ -83,8 +83,9 @@ jobs:
 
       - name: Setup PostgreSQL Database
         run: |
-          # Criar banco de dados se não existir
-          createdb -h localhost -U postgres -w skilllink_test || echo "Database already exists"
+          # Remover banco de dados se existir e criar novo
+          psql -h localhost -U postgres -c "DROP DATABASE IF EXISTS skilllink_test;"
+          createdb -h localhost -U postgres -w skilllink_test
           # Verificar se o usuário postgres tem permissões
           psql -h localhost -U postgres -d skilllink_test -c "SELECT version();"
         env:
