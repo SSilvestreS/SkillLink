@@ -21,10 +21,9 @@ export class CacheService {
         port: this.configService.get('REDIS_PORT', 6379),
         password: this.configService.get('REDIS_PASSWORD'),
         enableReadyCheck: false,
-        maxRetriesPerRequest: null,
+        maxRetriesPerRequest: 3,
         lazyConnect: true, // Conectar apenas quando necessário
         retryDelayOnFailover: 100,
-        maxRetriesPerRequest: 3,
       });
 
       this.redis.on('connect', () => {
