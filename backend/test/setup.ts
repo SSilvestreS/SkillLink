@@ -13,10 +13,13 @@ jest.mock('ioredis', () => {
     exists: jest.fn().mockResolvedValue(0),
     flushall: jest.fn().mockResolvedValue('OK'),
     keys: jest.fn().mockResolvedValue([]),
+    ping: jest.fn().mockResolvedValue('PONG'),
     connect: jest.fn().mockResolvedValue(undefined),
     disconnect: jest.fn().mockResolvedValue(undefined),
     on: jest.fn(),
     once: jest.fn(),
+    connected: true,
+    status: 'ready',
   }));
 });
 

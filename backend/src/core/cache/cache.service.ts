@@ -15,32 +15,43 @@ export class CacheService {
       return;
     }
 
-        this.redis = new Redis({
-          host: this.configService.get('REDIS_HOST', 'localhost'),
-          port: this.configService.get('REDIS_PORT', 6379),
-          password: this.configService.get('REDIS_PASSWORD'),
-          enableReadyCheck: false,
-          maxRetriesPerRequest: null,
-          lazyConnect: true, // Conectar apenas quando necessário
-        });
-
-    this.redis.on('connect', () => {
-      this.logger.log('Redis connected successfully');
-      this.isConnected = true;
-    });
-
-    this.redis.on('error', (error) => {
-      this.logger.error('Redis connection error:', error);
-      this.isConnected = false;
-    });
-
-    // ioredis conecta automaticamente, não precisa chamar connect()
-    // Apenas verificar se está conectado
     try {
+      this.redis = new Redis({
+        host: this.configService.get('REDIS_HOST', 'localhost'),
+        port: this.configService.get('REDIS_PORT', 6379),
+        password: this.configService.get('REDIS_PASSWORD'),
+        enableReadyCheck: false,
+        maxRetriesPerRequest: null,
+        lazyConnect: true, // Conectar apenas quando necessário
+        retryDelayOnFailover: 100,
+        maxRetriesPerRequest: 3,
+      });
+
+      this.redis.on('connect', () => {
+        this.logger.log('Redis connected successfully');
+        this.isConnected = true;
+      });
+
+      this.redis.on('ready', () => {
+        this.logger.log('Redis is ready to receive commands');
+        this.isConnected = true;
+      });
+
+      this.redis.on('error', (error) => {
+        this.logger.error('Redis connection error:', error);
+        this.isConnected = false;
+      });
+
+      this.redis.on('close', () => {
+        this.logger.warn('Redis connection closed');
+        this.isConnected = false;
+      });
+
+      // ioredis conecta automaticamente, apenas verificar se está funcionando
       await this.redis.ping();
       this.isConnected = true;
     } catch (error) {
-      this.logger.warn('Redis connection failed, will retry on next operation:', error.message);
+      this.logger.warn('Redis initialization failed, will retry on next operation:', error.message);
       this.isConnected = false;
     }
   }
