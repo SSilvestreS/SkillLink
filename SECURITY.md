@@ -2,7 +2,7 @@
 
 ## Relatório de Vulnerabilidades
 
-Se você encontrar uma vulnerabilidade de segurança, por favor, **NÃO** abra um issue público. Em vez disso, envie um email para [seu-email@exemplo.com] com os detalhes.
+Se você encontrar uma vulnerabilidade de segurança, por favor, **NÃO** abra um issue público. Em vez disso, envie um email para [sauloxl31@gmail.com] com os detalhes.
 
 ## Configuração de Segurança
 
@@ -52,12 +52,12 @@ npm audit fix
 ### Contato
 
 Para questões de segurança, entre em contato através de:
-- Email: [seu-email@exemplo.com]
-- GitHub: [@seu-usuario]
+- Email: [sauloxl31@gmail.com]
+- GitHub: [SSilvestreS]
 
 ## Histórico de Vulnerabilidades
 
-### v1.0.0 - 2025-01-XX
+### v1.0.0 - 2025-09-13
 - Corrigido: Senhas hardcoded em docker-compose.yml
 - Corrigido: JWT secret padrão inseguro
 - Corrigido: CORS configurado para aceitar qualquer origem
