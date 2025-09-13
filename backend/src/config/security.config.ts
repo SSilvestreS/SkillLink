@@ -3,7 +3,9 @@ import { ConfigService } from '@nestjs/config';
 export const securityConfig = (configService: ConfigService) => ({
   // JWT Configuration
   jwt: {
-    secret: configService.get('JWT_SECRET', 'default-secret-change-in-production'),
+    secret: configService.get('JWT_SECRET') || (() => {
+      throw new Error('JWT_SECRET must be set in environment variables');
+    })(),
     expiresIn: configService.get('JWT_EXPIRES_IN', '1h'),
     issuer: configService.get('JWT_ISSUER', 'skilllink'),
     audience: configService.get('JWT_AUDIENCE', 'skilllink-users'),
@@ -30,7 +32,7 @@ export const securityConfig = (configService: ConfigService) => ({
 
   // CORS Configuration
   cors: {
-    origin: configService.get('CORS_ORIGIN', '*'),
+    origin: configService.get('CORS_ORIGIN', 'http://localhost:8080,http://localhost:3000'),
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     credentials: true,
