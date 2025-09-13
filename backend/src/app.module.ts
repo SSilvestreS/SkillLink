@@ -4,11 +4,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { MulterModule } from '@nestjs/platform-express';
 // import { join } from 'path'; // Removido - não utilizado
 
-// Declaração de tipo para process
-declare const process: {
-  env: { [key: string]: string | undefined };
-};
-
 // Declaração de tipo para __dirname - removido pois não utilizado
 // declare const __dirname: string;
 
@@ -28,15 +23,6 @@ import { CacheModule } from './core/cache/cache.module';
 import { RateLimitModule } from './core/rate-limit/rate-limit.module';
 import { HealthModule } from './core/health/health.module';
 
-import { User } from './users/entities/user.entity';
-import { Profile } from './users/entities/profile.entity';
-import { Service } from './services/entities/service.entity';
-import { Contract } from './contracts/entities/contract.entity';
-import { Message } from './messages/entities/message.entity';
-import { Review } from './reviews/entities/review.entity';
-import { File } from './files/entities/file.entity';
-import { Notification } from './notifications/entities/notification.entity';
-import { Payment } from './payments/entities/payment.entity';
 
 @Module({
   imports: [
