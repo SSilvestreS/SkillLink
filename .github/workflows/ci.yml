@@ -83,15 +83,17 @@ jobs:
       - name: Wait for PostgreSQL
         run: |
           echo "Waiting for PostgreSQL to be ready..."
-          for i in {1..10}; do
-            if pg_isready -h localhost -p 5432 -U postgres -d skilllink_test; then
+          for i in {1..15}; do
+            if pg_isready -h localhost -p 5432 -U postgres; then
               echo "PostgreSQL is ready!"
+              # Aguardar um pouco mais para garantir que está totalmente inicializado
+              sleep 3
               exit 0
             fi
-            echo "PostgreSQL not ready, attempt $i/10, retrying in 2s..."
-            sleep 2
+            echo "PostgreSQL not ready, attempt $i/15, retrying in 3s..."
+            sleep 3
           done
-          echo "PostgreSQL failed to start after 10 attempts"
+          echo "PostgreSQL failed to start after 15 attempts"
           exit 1
         env:
           PGPASSWORD: postgres
@@ -99,15 +101,17 @@ jobs:
       - name: Wait for Redis
         run: |
           echo "Waiting for Redis to be ready..."
-          for i in {1..10}; do
+          for i in {1..15}; do
             if redis-cli -h localhost -p 6379 ping > /dev/null 2>&1; then
               echo "Redis is ready!"
+              # Aguardar um pouco mais para garantir que está totalmente inicializado
+              sleep 2
               exit 0
             fi
-            echo "Redis not ready, attempt $i/10, retrying in 2s..."
-            sleep 2
+            echo "Redis not ready, attempt $i/15, retrying in 3s..."
+            sleep 3
           done
-          echo "Redis failed to start after 10 attempts"
+          echo "Redis failed to start after 15 attempts"
           exit 1
 
       - name: Setup PostgreSQL Database

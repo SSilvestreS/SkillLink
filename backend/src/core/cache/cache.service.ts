@@ -34,9 +34,11 @@ export class CacheService {
       this.isConnected = false;
     });
 
-    // Tentar conectar, mas não falhar se não conseguir
+    // ioredis conecta automaticamente, não precisa chamar connect()
+    // Apenas verificar se está conectado
     try {
-      await this.redis.connect();
+      await this.redis.ping();
+      this.isConnected = true;
     } catch (error) {
       this.logger.warn('Redis connection failed, will retry on next operation:', error.message);
       this.isConnected = false;
