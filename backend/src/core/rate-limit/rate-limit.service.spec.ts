@@ -71,7 +71,7 @@ describe('RateLimitService', () => {
     });
 
     it('should filter out old requests', async () => {
-      const now = Date.now();
+      // const now = Date.now(); // Removido - não utilizado
       const config = {
         windowMs: 60000, // 1 minute
         maxRequests: 5,
@@ -180,7 +180,7 @@ describe('RateLimitService', () => {
 
   describe('getRateLimitStats', () => {
     it('should return rate limit statistics', async () => {
-      const now = Date.now();
+      // const now = Date.now(); // Removido - não utilizado
       const requests = [now - 30000, now - 20000, now - 10000];
       mockCacheService.get.mockResolvedValue(requests);
 

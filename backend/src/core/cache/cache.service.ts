@@ -15,15 +15,14 @@ export class CacheService {
       return;
     }
 
-    this.redis = new Redis({
-      host: this.configService.get('REDIS_HOST', 'localhost'),
-      port: this.configService.get('REDIS_PORT', 6379),
-      password: this.configService.get('REDIS_PASSWORD'),
-      retryDelayOnFailover: 100,
-      enableReadyCheck: false,
-      maxRetriesPerRequest: null,
-      lazyConnect: true, // Conectar apenas quando necessário
-    });
+        this.redis = new Redis({
+          host: this.configService.get('REDIS_HOST', 'localhost'),
+          port: this.configService.get('REDIS_PORT', 6379),
+          password: this.configService.get('REDIS_PASSWORD'),
+          enableReadyCheck: false,
+          maxRetriesPerRequest: null,
+          lazyConnect: true, // Conectar apenas quando necessário
+        });
 
     this.redis.on('connect', () => {
       this.logger.log('Redis connected successfully');

@@ -100,7 +100,7 @@ describe('Auth Integration Tests', () => {
       expect(result).toHaveProperty('user');
       expect(result).toHaveProperty('access_token');
       expect(result.user.email).toBe(userData.email);
-      expect(result.user.type).toBe('freelancer');
+      expect(result.user.role).toBe('freelancer');
     });
 
     it('should register a new company', async () => {
@@ -116,7 +116,7 @@ describe('Auth Integration Tests', () => {
       expect(result).toHaveProperty('user');
       expect(result).toHaveProperty('access_token');
       expect(result.user.email).toBe(userData.email);
-      expect(result.user.type).toBe('company');
+      expect(result.user.role).toBe('company');
     });
 
     it('should not register user with existing email', async () => {

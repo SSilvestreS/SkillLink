@@ -28,6 +28,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: skilllink_test
+          POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
