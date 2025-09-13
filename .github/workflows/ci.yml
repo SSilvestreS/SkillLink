@@ -157,7 +157,7 @@ jobs:
 
       - name: Run all tests
         working-directory: ./backend
-        run: timeout 300 npm test -- --verbose --runInBand --detectOpenHandles --forceExit --testTimeout=30000
+        run: timeout 300 npm test -- --config jest.config.js --verbose --runInBand --detectOpenHandles --forceExit
         env:
           NODE_ENV: test
           DB_HOST: localhost
