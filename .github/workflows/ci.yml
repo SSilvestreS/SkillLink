@@ -23,17 +23,17 @@ jobs:
     
     services:
       postgres:
-        image: postgres:13
+        image: postgres:14
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: skilllink_test
           POSTGRES_INITDB_ARGS: "--auth-host=md5"
         options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-cmd "pg_isready -U postgres -d skilllink_test"
+          --health-interval 5s
+          --health-timeout 10s
+          --health-retries 15
         ports:
           - 5432:5432
       
@@ -41,9 +41,9 @@ jobs:
         image: redis:7
         options: >-
           --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-interval 5s
+          --health-timeout 10s
+          --health-retries 15
         ports:
           - 6379:6379
 

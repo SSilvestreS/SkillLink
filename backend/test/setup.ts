@@ -23,19 +23,7 @@ jest.mock('ioredis', () => {
   }));
 });
 
-// Mock do LoggerService
-jest.mock('../src/core/logger/logger.service', () => ({
-  LoggerService: jest.fn().mockImplementation(() => ({
-    log: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn(),
-    debug: jest.fn(),
-    verbose: jest.fn(),
-    performance: jest.fn(),
-    audit: jest.fn(),
-    security: jest.fn(),
-  })),
-}));
+// Mock do LoggerService removido - usar instância real nos testes
 
 // Configuração global para testes
 beforeAll(async () => {
